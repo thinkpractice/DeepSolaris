@@ -4,6 +4,7 @@ from keras.models import Model
 from keras.layers import Dense, GlobalAveragePooling2D
 from keras.callbacks import ModelCheckpoint, TensorBoard
 from keras.applications.vgg16 import VGG16
+from sklearn.metrics import confusion_matrix
 import numpy as np
 import pandas as pd
 
@@ -80,6 +81,8 @@ def evaluate_model(model, settings, train_images, train_labels, test_images, tes
     train_acc = round(model.evaluate(train_images, train_labels, batch_size)[1],4)
     valid_acc = round(model.evaluate(validation_images, validation_labels, batch_size)[1],4)
     test_acc = round(model.evaluate(test_images, test_labels, batch_size)[1],4)
+
+    #confusion_matrix(true_labels, predicted_labels)
 
     print(model.metrics_names)
     print("- Training accuracy:\t{}".format(train_acc))
