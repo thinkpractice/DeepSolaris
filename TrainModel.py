@@ -26,7 +26,7 @@ print("- Test-set:\t\t{}".format(len(test_labels)))
 
 def log_dir_for(model_name, batch_size, epochs, lr):
     date = str(datetime.now().date())
-    log_dir_name = model_name + "_" + date + "_" + batch_size + "_" + epochs + "_" + lr
+    log_dir_name = model_name + "_" + date + "_" + str(batch_size) + "_" + str(epochs) + "_" + str(lr)
     return os.path.join(ProjectPaths.log_dir(),  log_dir_name)
 
 def base_model_for(model_name, pre_trained_weights = "imagenet"):
@@ -54,9 +54,14 @@ def train_model(model_name, model, batch_size, epochs, train_images, train_label
               validation_data = (validation_images, validation_labels), batch_size = batch_size,
               verbose = verbose)
 
-def evaluate_model(model_name, model):
-    pass
+def evaluate_model(model_name, model, train_images, train_labels, test_images, test_labels, validation_images, validation_labels):
+  train_acc = round(model.evaluate(train_images, train_labels, 128)[1],4)
+  valid_acc = round(model.evaluate(validation_images, validation_labels, 128)[1],4)
+  test_acc = round(model.evaluate(test_images, test_labels, 128)[1],4)
 
+  print("- Training accuracy:\t{}".format(train_acc))
+  print("- Validation accuracy:\t{}".format(valid_acc))
+  print("- Test accuracy:\t{}".format(test_acc))
 
 batch_size = 64
 step_size = 420
@@ -66,4 +71,5 @@ epochs = 48
 
 model_name = "vgg16"
 model = compile_model(model_name)
-train_model(model_name, model, batch_size, epochs, train_images, test_labels, valid_images, valid_labels)
+train_model(model_name, model, batch_size, epochs, train_images, train_labels, valid_images, valid_labels)
+evaluate_model(model_name, model, train_images, train_labels, test_images, test_labels, valid_images, valid_labels)

@@ -16,3 +16,7 @@ class ProjectPaths(object):
     @classmethod
     def model_dir(cls):
         return os.path.join(ProjectPaths.base_dir(), "Models")
+
+    @classmethod
+    def log_dir(cls):
+        return os.path.join(ProjectPaths.base_dir(), "Logs")
