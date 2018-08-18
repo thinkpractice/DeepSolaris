@@ -6,6 +6,7 @@ from keras.callbacks import TensorBoard
 from keras.applications.vgg16 import VGG16
 from datetime import datetime
 import numpy as np
+import pandas as pd
 import os
 
 train_images = np.load(ProjectPaths.file_in_image_dir('training_images_AcMüDüHo.npy'))
@@ -22,6 +23,9 @@ print("Size of:")
 print("- Training-set:\t\t{}".format(len(train_labels)))
 print("- Validation-set:\t{}".format(len(valid_labels)))
 print("- Test-set:\t\t{}".format(len(test_labels)))
+
+def models():
+    return {"vgg16": ""}
 
 
 def log_dir_for(model_name, batch_size, epochs, lr):
@@ -62,14 +66,23 @@ def evaluate_model(model_name, model, train_images, train_labels, test_images, t
   print("- Training accuracy:\t{}".format(train_acc))
   print("- Validation accuracy:\t{}".format(valid_acc))
   print("- Test accuracy:\t{}".format(test_acc))
+  return model_name, train_acc, test_acc, valid_acc
 
 batch_size = 64
 step_size = 420
 base_lr = 0.00001
 max_lr = 0.001
-epochs = 48
+#epochs = 48
+epochs = 1
 
-model_name = "vgg16"
-model = compile_model(model_name)
-train_model(model_name, model, batch_size, epochs, train_images, train_labels, valid_images, valid_labels)
-evaluate_model(model_name, model, train_images, train_labels, test_images, test_labels, valid_images, valid_labels)
+model_names = models().keys()
+model_evaluations = []
+for model_name in model_names:
+    model = compile_model(model_name)
+    train_model(model_name, model, batch_size, epochs, train_images, train_labels, valid_images, valid_labels)
+    model_evaluations.append(evaluate_model(model_name, model, train_images, train_labels, test_images, test_labels, valid_images, valid_labels))
+
+evaluation_names = ["model_name", "train_acc", "test_acc", "valid_acc"]
+np_model_evaluations = np.array(model_evaluations)
+evaluations = pd.DataFrame(np_model_evaluations, index=model_names, columns=evaluation_names)
+print(evaluations.head())
