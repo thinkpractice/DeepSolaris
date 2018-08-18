@@ -27,12 +27,15 @@ def models():
     return {"vgg16": lambda pre_trained_weights, include_top : VGG16(weights=pre_trained_weights, include_top=False) }
 
 
-def base_model_for(model_name, pre_trained_weights = "imagenet", include_top=False):
+def base_model_for(settings):
+    model_name = settings["model_name"]
+    pre_trained_weights = settings["pre_trained_weights"]
+    include_top = settings["include_top"]
     return models()[model_name](pre_trained_weights, include_top)
 
 
-def compile_model(model_name, all_trainable=False):
-    base_model = base_model_for(model_name)
+def compile_model(settings):
+    base_model = base_model_for(settings)
     base_model.summary()
     x = base_model.output
     x = GlobalAveragePooling2D()(x)
@@ -40,6 +43,7 @@ def compile_model(model_name, all_trainable=False):
     predictions = Dense(1, activation='sigmoid')(x)
 
     model = Model(inputs=base_model.input, outputs=predictions)
+    all_trainable = settings["all_trainable"]
     for layer in base_model.layers:
         layer.trainable = all_trainable
 
@@ -49,10 +53,11 @@ def compile_model(model_name, all_trainable=False):
     return model
 
 
-def train_model(model_name, model, run_settings, train_images, train_labels, validation_images,
+def train_model(model, settings, train_images, train_labels, validation_images,
                 validation_labels, verbose=True):
-    batch_size = run_settings["batch_size"]
-    epochs = run_settings["epochs"]
+    model_name = settings["model_name"]
+    batch_size = settings["batch_size"]
+    epochs = settings["epochs"]
 
     checkpoint_dir = ProjectPaths.checkpoint_dir_for(model_name, batch_size, epochs)
     model_checkpoint_callback = ModelCheckpoint(checkpoint_dir, monitor='val_acc', verbose= verbose,
@@ -68,9 +73,10 @@ def train_model(model_name, model, run_settings, train_images, train_labels, val
               verbose=verbose)
 
 
-def evaluate_model(model_name, model, run_settings, train_images, train_labels, test_images, test_labels,
+def evaluate_model(model, settings, train_images, train_labels, test_images, test_labels,
                    validation_images, validation_labels):
-    batch_size = run_settings["batch_size"]
+    model_name = settings["model_name"]
+    batch_size = settings["batch_size"]
     train_acc = round(model.evaluate(train_images, train_labels, batch_size)[1],4)
     valid_acc = round(model.evaluate(validation_images, validation_labels, batch_size)[1],4)
     test_acc = round(model.evaluate(test_images, test_labels, batch_size)[1],4)
@@ -84,18 +90,18 @@ def evaluate_model(model_name, model, run_settings, train_images, train_labels, 
 
 run_settings = {"batch_size": 64,
                 "epochs": 1,
-                "models": [
-                    {"model_name": "vgg16",
-                     "pre_trained_weights": "imagenet",
-                     "include_top": False}
-                ]}
+                "model_name": "vgg16",
+                "pre_trained_weights": "imagenet",
+                "include_top": False,
+                "all_trainable": False
+                }
 
 model_names = models().keys()
 model_evaluations = []
 for model_name in model_names:
-    model = compile_model(model_name)
-    train_model(model_name, model, run_settings, train_images, train_labels, valid_images, valid_labels)
-    model_evaluations.append(evaluate_model(model_name, model, run_settings, train_images, train_labels, test_images, test_labels, valid_images, valid_labels))
+    compiled_model = compile_model(run_settings)
+    train_model(compiled_model, run_settings, train_images, train_labels, valid_images, valid_labels)
+    model_evaluations.append(evaluate_model(compiled_model, run_settings, train_images, train_labels, test_images, test_labels, valid_images, valid_labels))
 
 evaluation_names = ["model_name", "train_acc", "test_acc", "valid_acc"]
 np_model_evaluations = np.array(model_evaluations)
