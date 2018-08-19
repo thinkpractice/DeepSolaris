@@ -30,7 +30,7 @@ EvaluationSet = namedtuple("EvaluationSet", ["name", "images", "labels"])
 
 
 def models():
-    return {"vgg16": lambda pre_trained_weights, include_top: VGG16(weights=pre_trained_weights, include_top=False)}
+    return {"vgg16": lambda settings: VGG16(weights=settings.pre_trained_weights, include_top=settings.include_top)}
 
 
 def optimizers():
@@ -39,7 +39,7 @@ def optimizers():
 
 
 def base_model_for(settings):
-    return models()[settings.model_name](settings.pre_trained_weights, settings.include_top)
+    return models()[settings.model_name](settings)
 
 
 def optimizer_for(settings):
