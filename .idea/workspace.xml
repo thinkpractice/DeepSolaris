@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="c929a17f-5d91-4542-9a71-02198e45cc0c" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/run_settings.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Datasets.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/TrainModel.py" beforeDir="false" afterPath="$PROJECT_DIR$/TrainModel.py" afterDir="false" />
     </list>
@@ -29,30 +29,30 @@
           <entry key="csv" value="198" />
           <entry key="dummy" value="4" />
           <entry key="json" value="114" />
-          <entry key="py" value="6782" />
-          <entry key="txt" value="1123" />
+          <entry key="py" value="7461" />
+          <entry key="txt" value="1625" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="CSV" value="30" />
           <entry key="JSON" value="114" />
-          <entry key="PLAIN_TEXT" value="1295" />
-          <entry key="Python" value="6866" />
+          <entry key="PLAIN_TEXT" value="1797" />
+          <entry key="Python" value="7545" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
         <counts>
           <entry key="csv" value="1" />
           <entry key="json" value="1" />
-          <entry key="py" value="4" />
+          <entry key="py" value="5" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.open">
         <counts>
           <entry key="JSON" value="1" />
           <entry key="PLAIN_TEXT" value="1" />
-          <entry key="Python" value="4" />
+          <entry key="Python" value="5" />
         </counts>
       </usages-collector>
     </session>
@@ -62,12 +62,26 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/TrainModel.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="149">
-              <caret line="109" column="24" selection-start-line="109" selection-start-column="24" selection-end-line="109" selection-end-column="24" />
+            <state relative-caret-position="75">
+              <caret line="53" selection-start-line="53" selection-end-line="53" />
               <folding>
                 <element signature="e#0#37#0" expanded="true" />
-                <marker date="1534683186439" expanded="true" signature="1352:1554" ph="..." />
-                <marker date="1534683186439" expanded="true" signature="1583:1640" ph="..." />
+                <marker date="1534685033831" expanded="true" signature="701:903" ph="..." />
+                <marker date="1534685033831" expanded="true" signature="932:989" ph="..." />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Datasets.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="254">
+              <caret line="17" column="25" selection-start-line="17" selection-start-column="25" selection-end-line="17" selection-end-column="25" />
+              <folding>
+                <element signature="e#0#34#0" expanded="true" />
+                <marker date="1534684520711" expanded="true" signature="337:419" ph="..." />
+                <marker date="1534684520711" expanded="true" signature="1322:1327" ph="..." />
               </folding>
             </state>
           </provider>
@@ -131,6 +145,14 @@
       </list>
     </option>
   </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>ProjectPaths.file_in_image_dir</find>
+    </findStrings>
+    <replaceStrings>
+      <replace>Datasets.load_image_data</replace>
+    </replaceStrings>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
@@ -142,6 +164,7 @@
         <option value="$PROJECT_DIR$/ModelFactory.py" />
         <option value="$PROJECT_DIR$/run_settings.csv" />
         <option value="$PROJECT_DIR$/run_settings.json" />
+        <option value="$PROJECT_DIR$/Datasets.py" />
         <option value="$PROJECT_DIR$/TrainModel.py" />
       </list>
     </option>
@@ -348,12 +371,32 @@
       <option name="project" value="LOCAL" />
       <updated>1534675964450</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL-00018" summary="Make sure to write model evaluations already during the evaluation process and not at the end; because it's a long process when writing the CSV at the end, evaluations could be lost at intermediate crashes in the evaluation process. Now at least the evaluations of the runs up to a crash will be saved in a CSV file.">
+      <created>1534683331537</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1534683331537</updated>
+    </task>
+    <task id="LOCAL-00019" summary="Some refactoring and code cleanup.">
+      <created>1534683478751</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1534683478751</updated>
+    </task>
+    <task id="LOCAL-00020" summary="Use parameter instead of global variables for validation images and labels in evaluate_model.">
+      <created>1534683626210</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1534683626210</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
     <servers />
   </component>
   <component name="ToolWindowManager">
     <frame x="67" y="25" width="1853" height="1055" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.13442624" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -395,7 +438,10 @@
     <MESSAGE value="Use settings namedtuple directly in model creation lambda." />
     <MESSAGE value="Refactored model creation code into ModelFactory.py" />
     <MESSAGE value="Added main method to TrainModel." />
-    <option name="LAST_COMMIT_MESSAGE" value="Added main method to TrainModel." />
+    <MESSAGE value="Make sure to write model evaluations already during the evaluation process and not at the end; because it's a long process when writing the CSV at the end, evaluations could be lost at intermediate crashes in the evaluation process. Now at least the evaluations of the runs up to a crash will be saved in a CSV file." />
+    <MESSAGE value="Some refactoring and code cleanup." />
+    <MESSAGE value="Use parameter instead of global variables for validation images and labels in evaluate_model." />
+    <option name="LAST_COMMIT_MESSAGE" value="Use parameter instead of global variables for validation images and labels in evaluate_model." />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/ModelFactory.py">
@@ -442,14 +488,26 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/Datasets.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="254">
+          <caret line="17" column="25" selection-start-line="17" selection-start-column="25" selection-end-line="17" selection-end-column="25" />
+          <folding>
+            <element signature="e#0#34#0" expanded="true" />
+            <marker date="1534684520711" expanded="true" signature="337:419" ph="..." />
+            <marker date="1534684520711" expanded="true" signature="1322:1327" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/TrainModel.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="149">
-          <caret line="109" column="24" selection-start-line="109" selection-start-column="24" selection-end-line="109" selection-end-column="24" />
+        <state relative-caret-position="75">
+          <caret line="53" selection-start-line="53" selection-end-line="53" />
           <folding>
             <element signature="e#0#37#0" expanded="true" />
-            <marker date="1534683186439" expanded="true" signature="1352:1554" ph="..." />
-            <marker date="1534683186439" expanded="true" signature="1583:1640" ph="..." />
+            <marker date="1534685033831" expanded="true" signature="701:903" ph="..." />
+            <marker date="1534685033831" expanded="true" signature="932:989" ph="..." />
           </folding>
         </state>
       </provider>
