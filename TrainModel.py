@@ -90,7 +90,6 @@ def train_and_evaluate(run_settings_list):
         model = ModelFactory.model_for(run_settings)
         compiled_model = compile_model(model, run_settings)
         train_model(compiled_model, run_settings, train_images, train_labels, valid_images, valid_labels)
-        run_names.append(run_settings.model_name)
         headers, values = evaluate_model(compiled_model, run_settings, train_images, train_labels, test_images,
                                          test_labels,valid_images, valid_labels)
         yield run_settings.model_name, headers, values
@@ -118,8 +117,8 @@ def train_evaluate_and_log(csv_filename, run_settings_list):
 def load_run_settings(filename):
     return [RunSettings(model_name="vgg16", pre_trained_weights="imagenet", include_top=False,
                                all_trainable=False,
-                               batch_size=64, epochs=100, optimizer="rmsprop", lr=None, momentum=None, decay=None,
-                               nesterov=None) for _ in range(5)]
+                               batch_size=64, epochs=1, optimizer="rmsprop", lr=None, momentum=None, decay=None,
+                               nesterov=None) for _ in range(1)]
 
 def main(argv):
     if len(argv) <= 1:
@@ -130,10 +129,9 @@ def main(argv):
     print(run_settings_list)
 
     csv_filename = ProjectPaths.logfile_in_log_dir("all_runs_{}.csv")
-    run_names,column_headers, np_model_evaluations = train_evaluate_and_log(csv_filename, run_settings_list)
+    run_names, column_headers, np_model_evaluations = train_evaluate_and_log(csv_filename, run_settings_list)
 
     evaluations = pd.DataFrame(np_model_evaluations, index=run_names, columns=column_headers)
-    evaluations.to_csv(
     print(evaluations.head())
 
 
