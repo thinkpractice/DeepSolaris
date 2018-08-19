@@ -69,7 +69,7 @@ def evaluate_model(model, settings, train_images, train_labels, test_images, tes
 
     datasets = [EvaluationSet(name="train", images=train_images, labels=train_labels),
                 EvaluationSet(name="test", images=test_images, labels=test_labels),
-                EvaluationSet(name="validation", images=valid_images, labels=valid_labels)
+                EvaluationSet(name="validation", images=validation_images, labels=validation_labels)
                 ]
 
     for dataset in datasets:
