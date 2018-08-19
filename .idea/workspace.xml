@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="c929a17f-5d91-4542-9a71-02198e45cc0c" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ModelFactory.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/TrainModel.py" beforeDir="false" afterPath="$PROJECT_DIR$/TrainModel.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -26,39 +26,52 @@
         <counts>
           <entry key="Python Console" value="84" />
           <entry key="dummy" value="4" />
-          <entry key="py" value="5644" />
-          <entry key="txt" value="960" />
+          <entry key="py" value="5827" />
+          <entry key="txt" value="1023" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="PLAIN_TEXT" value="964" />
-          <entry key="Python" value="5728" />
+          <entry key="PLAIN_TEXT" value="1027" />
+          <entry key="Python" value="5911" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
         <counts>
-          <entry key="py" value="3" />
+          <entry key="py" value="4" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.open">
         <counts>
-          <entry key="Python" value="3" />
+          <entry key="Python" value="4" />
         </counts>
       </usages-collector>
     </session>
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/TrainModel.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="209">
-              <caret line="41" column="49" selection-start-line="41" selection-start-column="49" selection-end-line="41" selection-end-column="49" />
+            <state relative-caret-position="119">
+              <caret line="90" column="45" selection-start-line="90" selection-start-column="45" selection-end-line="90" selection-end-column="45" />
               <folding>
                 <element signature="e#0#37#0" expanded="true" />
-                <marker date="1534675410918" expanded="true" signature="1554:1757" ph="..." />
-                <marker date="1534675410918" expanded="true" signature="1868:1925" ph="..." />
+                <marker date="1534675725895" expanded="true" signature="1330:1532" ph="..." />
+                <marker date="1534675725895" expanded="true" signature="1561:1618" ph="..." />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/ModelFactory.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="165">
+              <caret line="11" column="27" selection-start-line="11" selection-start-column="27" selection-end-line="11" selection-end-column="27" />
+              <folding>
+                <element signature="e#0#30#0" expanded="true" />
+                <marker date="1534675744795" expanded="true" signature="157:158" ph="..." />
               </folding>
             </state>
           </provider>
@@ -109,6 +122,7 @@
         <option value="$PROJECT_DIR$/PerformanceMetrics.py" />
         <option value="$PROJECT_DIR$/ProjectPaths.py" />
         <option value="$PROJECT_DIR$/TrainModel.py" />
+        <option value="$PROJECT_DIR$/ModelFactory.py" />
       </list>
     </option>
   </component>
@@ -293,13 +307,20 @@
       <option name="project" value="LOCAL" />
       <updated>1534675290248</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="Use settings namedtuple directly in model creation lambda.">
+      <created>1534675506414</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1534675506414</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="ToolWindowManager">
     <frame x="67" y="25" width="1853" height="1055" extended-state="6" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.13442624" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.13442624" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -310,7 +331,7 @@
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Version Control" order="7" />
-      <window_info anchor="bottom" id="Terminal" order="8" visible="true" weight="0.32864866" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="8" visible="true" weight="0.32864866" />
       <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
       <window_info anchor="bottom" id="Python Console" order="10" weight="0.3091892" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
@@ -336,19 +357,10 @@
     <MESSAGE value="Now adds evaluation measure dynamically." />
     <MESSAGE value="Added confusion_matrix to evaluation metrics. Confusion matrix assumes sigmoid cutoff at 0.5 now." />
     <MESSAGE value="Now saves evaluation to csv file in logdir. Also refactored creation of RunSettings into the load_run_settings method in preparation of loading them from a csv." />
-    <option name="LAST_COMMIT_MESSAGE" value="Now saves evaluation to csv file in logdir. Also refactored creation of RunSettings into the load_run_settings method in preparation of loading them from a csv." />
+    <MESSAGE value="Use settings namedtuple directly in model creation lambda." />
+    <option name="LAST_COMMIT_MESSAGE" value="Use settings namedtuple directly in model creation lambda." />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/PerformanceMetrics.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="375">
-          <caret line="25" column="30" selection-start-line="25" selection-start-column="30" selection-end-line="25" selection-end-column="30" />
-          <folding>
-            <marker date="1534586249179" expanded="true" signature="82:83" ph="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ProjectPaths.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="464">
@@ -362,14 +374,35 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/PerformanceMetrics.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="375">
+          <caret line="25" column="30" selection-start-line="25" selection-start-column="30" selection-end-line="25" selection-end-column="30" />
+          <folding>
+            <marker date="1534586249179" expanded="true" signature="82:83" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/TrainModel.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="209">
-          <caret line="41" column="49" selection-start-line="41" selection-start-column="49" selection-end-line="41" selection-end-column="49" />
+        <state relative-caret-position="119">
+          <caret line="90" column="45" selection-start-line="90" selection-start-column="45" selection-end-line="90" selection-end-column="45" />
           <folding>
             <element signature="e#0#37#0" expanded="true" />
-            <marker date="1534675410918" expanded="true" signature="1554:1757" ph="..." />
-            <marker date="1534675410918" expanded="true" signature="1868:1925" ph="..." />
+            <marker date="1534675725895" expanded="true" signature="1330:1532" ph="..." />
+            <marker date="1534675725895" expanded="true" signature="1561:1618" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ModelFactory.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="165">
+          <caret line="11" column="27" selection-start-line="11" selection-start-column="27" selection-end-line="11" selection-end-column="27" />
+          <folding>
+            <element signature="e#0#30#0" expanded="true" />
+            <marker date="1534675744795" expanded="true" signature="157:158" ph="..." />
           </folding>
         </state>
       </provider>

@@ -7,6 +7,7 @@ from sklearn.metrics import confusion_matrix
 from collections import namedtuple
 import numpy as np
 import pandas as pd
+import sys
 
 train_images = np.load(ProjectPaths.file_in_image_dir('training_images_AcMüDüHo.npy'))
 train_labels = np.load(ProjectPaths.file_in_image_dir('training_labels_AcMüDüHo.npy'))
@@ -102,13 +103,17 @@ def train_and_evaluate(run_settings_list):
 def load_run_settings(filename):
     return [RunSettings(model_name="vgg16", pre_trained_weights="imagenet", include_top=False,
                                all_trainable=False,
-                               batch_size=64, epochs=1, optimizer="rmsprop", lr=None, momentum=None, decay=None,
+                               batch_size=64, epochs=100, optimizer="rmsprop", lr=None, momentum=None, decay=None,
                                nesterov=None)]
 
+def main(argv):
+    run_settings_list = load_run_settings("")
+    run_names, column_headers, np_model_evaluations = train_and_evaluate(run_settings_list)
 
-run_settings_list = load_run_settings("")
-run_names, column_headers, np_model_evaluations = train_and_evaluate(run_settings_list)
+    evaluations = pd.DataFrame(np_model_evaluations, index=run_names, columns=column_headers)
+    evaluations.to_csv(ProjectPaths.logfile_in_log_dir("all_runs_{}.csv"))
+    print(evaluations.head())
 
-evaluations = pd.DataFrame(np_model_evaluations, index=run_names, columns=column_headers)
-evaluations.to_csv(ProjectPaths.logfile_in_log_dir("all_runs_{}.csv"))
-print(evaluations.head())
+
+if __name__ == "__main__":
+    main(sys.argv)
