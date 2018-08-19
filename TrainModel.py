@@ -71,7 +71,7 @@ def train_model(model, settings, train_images, train_labels, validation_images,
                                                 save_weights_only=True,
                                                 save_best_only=True, mode='max', period=1)
 
-    log_dir = ProjectPaths.log_dir_for(settings.model_name, settings.batch_size, settings.epochs, 0)
+    log_dir = ProjectPaths.log_dir_for(settings.model_name, settings.batch_size, settings.epochs, settings.lr)
     tensorboard_callback = TensorBoard(log_dir=log_dir, histogram_freq=0,  write_graph=False, write_images=False)
 
     model.fit(x=train_images, y=train_labels, epochs=settings.epochs,
@@ -119,11 +119,16 @@ def train_and_evaluate(run_settings_list):
     return run_names, column_headers, np.array(model_evaluations)
 
 
-run_settings = RunSettings(model_name="vgg16", pre_trained_weights="imagenet", include_top=False, all_trainable=False,
-                           batch_size=64, epochs=1, optimizer="rmsprop", lr=None, momentum=None, decay=None,
-                           nesterov=None)
-run_names, column_headers, np_model_evaluations = train_and_evaluate([run_settings])
+def load_run_settings(filename):
+    return [RunSettings(model_name="vgg16", pre_trained_weights="imagenet", include_top=False,
+                               all_trainable=False,
+                               batch_size=64, epochs=1, optimizer="rmsprop", lr=None, momentum=None, decay=None,
+                               nesterov=None)]
 
-evaluation_names = ["model_name", "train_acc", "test_acc", "valid_acc"]
+
+run_settings_list = load_run_settings("")
+run_names, column_headers, np_model_evaluations = train_and_evaluate(run_settings_list)
+
 evaluations = pd.DataFrame(np_model_evaluations, index=run_names, columns=column_headers)
+evaluations.to_csv(ProjectPaths.logfile_in_log_dir("all_runs_{}.csv"))
 print(evaluations.head())

@@ -25,7 +25,8 @@ class ProjectPaths(object):
     @classmethod
     def log_dir_for(cls, model_name, batch_size, epochs, lr):
         date = str(datetime.now().date())
-        log_dir_name = model_name + "_" + date + "_" + str(batch_size) + "_" + str(epochs) + "_" + str(lr)
+        learning_rate = "default_lr" if not lr else str(lr)
+        log_dir_name = model_name + "_" + date + "_" + str(batch_size) + "_" + str(epochs) + "_" + learning_rate
         return os.path.join(ProjectPaths.log_dir(),  log_dir_name)
 
     @classmethod
@@ -33,3 +34,8 @@ class ProjectPaths(object):
         date = str(datetime.now().date())
         check_point_dir = model_name + "_" + date + "_" + str(batch_size) + "_" + str(epochs)
         return os.path.join(ProjectPaths.model_dir(), check_point_dir)
+
+    @classmethod
+    def logfile_in_log_dir(cls, filename_template):
+        filename = filename_template.format(datetime.now().strftime("%Y%m%d_%H:%M:%S"))
+        return os.path.join(ProjectPaths.log_dir(), filename)
