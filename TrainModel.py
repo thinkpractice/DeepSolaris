@@ -26,6 +26,8 @@ print("- Validation-set:\t{}".format(len(valid_labels)))
 print("- Test-set:\t\t{}".format(len(test_labels)))
 
 RunSettings = namedtuple("RunSettings", ["model_name", "pre_trained_weights", "include_top", "all_trainable", "batch_size", "epochs", "optimizer", "lr", "momentum", "decay", "nesterov"])
+EvaluationSet = namedtuple("EvaluationSet", ["name", "images", "labels"])
+
 
 def models():
     return {"vgg16": lambda pre_trained_weights, include_top: VGG16(weights=pre_trained_weights, include_top=False)}
@@ -80,38 +82,44 @@ def train_model(model, settings, train_images, train_labels, validation_images,
 
 def evaluate_model(model, settings, train_images, train_labels, test_images, test_labels,
                    validation_images, validation_labels):
-    train_acc = round(model.evaluate(train_images, train_labels, settings.batch_size)[1],4)
-    valid_acc = round(model.evaluate(validation_images, validation_labels, settings.batch_size)[1],4)
-    test_acc = round(model.evaluate(test_images, test_labels, settings.batch_size)[1],4)
+    column_headers=list(settings._fields)
+    column_values=list(settings)
+
+    datasets = [EvaluationSet(name="train", images=train_images, labels=train_labels),
+                EvaluationSet(name="test", images=test_images, labels=test_labels),
+                EvaluationSet(name="validation", images=valid_images, labels=valid_labels)
+                ]
+
+    for dataset in datasets:
+        column_headers.extend(["{}_{}".format(dataset.name, metric_name) for metric_name in model.metrics_names])
+        column_values.extend(model.evaluate(dataset.images, dataset.labels, settings.batch_size))
 
     #confusion_matrix(true_labels, predicted_labels)
 
-    print(model.metrics_names)
-    print("- Training accuracy:\t{}".format(train_acc))
-    print("- Validation accuracy:\t{}".format(valid_acc))
-    print("- Test accuracy:\t{}".format(test_acc))
-    return settings.model_name, train_acc, test_acc, valid_acc
+    return column_headers, column_values
 
 
 def train_and_evaluate(run_settings_list):
+    run_names = []
+    column_headers = []
     model_evaluations = []
     for run_settings in run_settings_list:
         compiled_model = compile_model(run_settings)
         train_model(compiled_model, run_settings, train_images, train_labels, valid_images, valid_labels)
-        model_evaluations.append(
-            evaluate_model(compiled_model, run_settings, train_images, train_labels, test_images, test_labels,
-                           valid_images, valid_labels))
-    return np.array(model_evaluations)
+        run_names.append(run_settings.model_name)
+        headers, values = evaluate_model(compiled_model, run_settings, train_images, train_labels, test_images,
+                                         test_labels,valid_images, valid_labels)
+        column_headers = headers
+        model_evaluations.append(values)
+
+    return run_names, column_headers, np.array(model_evaluations)
 
 
 run_settings = RunSettings(model_name="vgg16", pre_trained_weights="imagenet", include_top=False, all_trainable=False,
                            batch_size=64, epochs=1, optimizer="rmsprop", lr=None, momentum=None, decay=None,
                            nesterov=None)
-
-
-model_names = models().keys()
-np_model_evaluations = train_and_evaluate([run_settings])
+run_names, column_headers, np_model_evaluations = train_and_evaluate([run_settings])
 
 evaluation_names = ["model_name", "train_acc", "test_acc", "valid_acc"]
-evaluations = pd.DataFrame(np_model_evaluations, index=model_names, columns=evaluation_names)
+evaluations = pd.DataFrame(np_model_evaluations, index=run_names, columns=column_headers)
 print(evaluations.head())
