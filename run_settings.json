@@ -1,0 +1,14 @@
+[
+  {
+    "model_name": "vgg16",
+    "pre_trained_weights": false,
+    "include_top": "all_trainable",
+    "batch_size": 64,
+    "epochs": 100,
+    "optimizer": "rmsprop",
+    "lr": null,
+    "momentum": null,
+    "decay": null,
+    "nesterov": null
+  }
+]

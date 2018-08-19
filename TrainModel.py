@@ -7,6 +7,7 @@ from sklearn.metrics import confusion_matrix
 from collections import namedtuple
 import numpy as np
 import pandas as pd
+import csv
 import sys
 
 train_images = np.load(ProjectPaths.file_in_image_dir('training_images_AcMüDüHo.npy'))
@@ -47,6 +48,7 @@ def compile_model(model, settings):
 def train_model(model, settings, train_images, train_labels, validation_images,
                 validation_labels, verbose=True):
     checkpoint_dir = ProjectPaths.checkpoint_dir_for(settings.model_name, settings.batch_size, settings.epochs)
+    # TODO change model checkpoint filename format!
     model_checkpoint_callback = ModelCheckpoint(checkpoint_dir, monitor='val_acc', verbose=verbose,
                                                 save_weights_only=True,
                                                 save_best_only=True, mode='max', period=1)
@@ -84,9 +86,6 @@ def evaluate_model(model, settings, train_images, train_labels, test_images, tes
 
 
 def train_and_evaluate(run_settings_list):
-    run_names = []
-    column_headers = []
-    model_evaluations = []
     for run_settings in run_settings_list:
         model = ModelFactory.model_for(run_settings)
         compiled_model = compile_model(model, run_settings)
@@ -94,26 +93,51 @@ def train_and_evaluate(run_settings_list):
         run_names.append(run_settings.model_name)
         headers, values = evaluate_model(compiled_model, run_settings, train_images, train_labels, test_images,
                                          test_labels,valid_images, valid_labels)
-        column_headers = headers
-        model_evaluations.append(values)
+        yield run_settings.model_name, headers, values
 
+def train_evaluate_and_log(csv_filename, run_settings_list):
+    write_header_row = True
+    run_names = []
+    column_headers = []
+    model_evaluations = []
+    with open(csv_filename, "w") as csv_file:
+        csv_writer = csv.writer(csv_file, delimiter=";")
+        for run_name, header, evaluations in train_and_evaluate(run_settings_list):
+            if write_header_row:
+                csv_writer.writerow(header)
+                write_header_row = False
+            values = [run_name]
+            values.extend(evaluations)
+            csv_writer.writerow(values)
+
+            run_names.append(run_name)
+            column_headers.append(header)
+            model_evaluations.append(evaluations)
     return run_names, column_headers, np.array(model_evaluations)
-
 
 def load_run_settings(filename):
     return [RunSettings(model_name="vgg16", pre_trained_weights="imagenet", include_top=False,
                                all_trainable=False,
                                batch_size=64, epochs=100, optimizer="rmsprop", lr=None, momentum=None, decay=None,
-                               nesterov=None)]
+                               nesterov=None) for _ in range(5)]
 
 def main(argv):
-    run_settings_list = load_run_settings("")
-    run_names, column_headers, np_model_evaluations = train_and_evaluate(run_settings_list)
+    if len(argv) <= 1:
+        print("Usage: TrainModel.py <run settings filename>")
+        exit(0)
+
+    run_settings_list = load_run_settings(argv[1])
+    print(run_settings_list)
+
+    csv_filename = ProjectPaths.logfile_in_log_dir("all_runs_{}.csv")
+    run_names,column_headers, np_model_evaluations = train_evaluate_and_log(csv_filename, run_settings_list)
 
     evaluations = pd.DataFrame(np_model_evaluations, index=run_names, columns=column_headers)
-    evaluations.to_csv(ProjectPaths.logfile_in_log_dir("all_runs_{}.csv"))
+    evaluations.to_csv(
     print(evaluations.head())
 
 
 if __name__ == "__main__":
     main(sys.argv)
+
+
