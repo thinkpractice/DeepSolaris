@@ -1,9 +1,7 @@
 from ProjectPaths import ProjectPaths
 from PerformanceMetrics import PerformanceMetrics
-from keras.models import Model
-from keras.layers import Dense, GlobalAveragePooling2D
+from ModelFactory import ModelFactory
 from keras.callbacks import ModelCheckpoint, TensorBoard
-from keras.applications.vgg16 import VGG16
 from keras.optimizers import SGD, RMSprop
 from sklearn.metrics import confusion_matrix
 from collections import namedtuple
@@ -29,35 +27,16 @@ RunSettings = namedtuple("RunSettings", ["model_name", "pre_trained_weights", "i
 EvaluationSet = namedtuple("EvaluationSet", ["name", "images", "labels"])
 
 
-def models():
-    return {"vgg16": lambda settings: VGG16(weights=settings.pre_trained_weights, include_top=settings.include_top)}
-
-
 def optimizers():
     return {"sgd": lambda settings: SGD(settings.lr, settings.momentum, settings.decay, settings.nesterov),
             "rmsprop": lambda settings: RMSprop(settings.lr) if settings.lr else RMSprop()}
-
-
-def base_model_for(settings):
-    return models()[settings.model_name](settings)
 
 
 def optimizer_for(settings):
     return optimizers()[settings.optimizer](settings)
 
 
-def compile_model(settings):
-    base_model = base_model_for(settings)
-    base_model.summary()
-    x = base_model.output
-    x = GlobalAveragePooling2D()(x)
-    x = Dense(1024, activation='relu')(x)
-    predictions = Dense(1, activation='sigmoid')(x)
-
-    model = Model(inputs=base_model.input, outputs=predictions)
-    for layer in base_model.layers:
-        layer.trainable = settings.all_trainable
-
+def compile_model(model, settings):
     model.compile(optimizer=optimizer_for(settings), loss='binary_crossentropy',
                   metrics=['accuracy', PerformanceMetrics.precision,
                            PerformanceMetrics.recall, PerformanceMetrics.fmeasure])
@@ -108,7 +87,8 @@ def train_and_evaluate(run_settings_list):
     column_headers = []
     model_evaluations = []
     for run_settings in run_settings_list:
-        compiled_model = compile_model(run_settings)
+        model = ModelFactory.model_for(run_settings)
+        compiled_model = compile_model(model, run_settings)
         train_model(compiled_model, run_settings, train_images, train_labels, valid_images, valid_labels)
         run_names.append(run_settings.model_name)
         headers, values = evaluate_model(compiled_model, run_settings, train_images, train_labels, test_images,
