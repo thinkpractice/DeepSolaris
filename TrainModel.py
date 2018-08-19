@@ -94,7 +94,11 @@ def evaluate_model(model, settings, train_images, train_labels, test_images, tes
         column_headers.extend(["{}_{}".format(dataset.name, metric_name) for metric_name in model.metrics_names])
         column_values.extend(model.evaluate(dataset.images, dataset.labels, settings.batch_size))
 
-    #confusion_matrix(true_labels, predicted_labels)
+        column_headers.extend(["{}_{}".format(dataset.name, confusion_label) for confusion_label in ["tn", "fp", "fn",
+                                                                                                     "tp"]])
+        #Confusion matrix assumes sigmoid cut-off at 0.5, below is negative, above is positive
+        predicted_labels = [np.round(prediction) for prediction in model.predict(dataset.images)]
+        column_values.extend(confusion_matrix(dataset.labels, predicted_labels).ravel())
 
     return column_headers, column_values
 
