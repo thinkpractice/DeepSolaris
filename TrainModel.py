@@ -76,6 +76,7 @@ def train_and_evaluate(run_settings_list):
         headers, values = evaluate_model(compiled_model, run_settings, dataset)
         yield run_settings.model_name, headers, values
 
+
 def train_evaluate_and_log(csv_filename, run_settings_list):
     write_header_row = True
     run_names = []
@@ -96,10 +97,12 @@ def train_evaluate_and_log(csv_filename, run_settings_list):
             model_evaluations.append(evaluations)
     return run_names, column_headers, np.array(model_evaluations)
 
+
 def load_run_settings(filename):
     return [RunSettings(model_name="vgg16", pre_trained_weights="imagenet", include_top=False, all_trainable=False,
                         dataset_name="AcMüDüHo", batch_size=64, epochs=1, optimizer="rmsprop", lr=None, momentum=None,
                         decay=None, nesterov=None) for _ in range(1)]
+
 
 def main(argv):
     if len(argv) <= 1:
