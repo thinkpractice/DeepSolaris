@@ -75,6 +75,8 @@ def evaluate_model(model, settings, datasets):
 
 def train_and_evaluate(run_settings_list):
     for run_settings in run_settings_list:
+        run_name = run_name_for(run_settings)
+        print("Training and evaluating: {}".format(run_name))
         model = ModelFactory.model_for(run_settings)
         compiled_model = compile_model(model, run_settings)
 
@@ -82,7 +84,7 @@ def train_and_evaluate(run_settings_list):
         train_model(compiled_model, run_settings, dataset[0].images, dataset[0].labels, dataset[2].images, dataset[2].labels)
 
         headers, values = evaluate_model(compiled_model, run_settings, dataset)
-        yield run_name_for(run_settings), headers, values
+        yield run_name, headers, values
 
 
 def train_evaluate_and_log(csv_filename, run_settings_list):
