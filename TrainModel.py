@@ -10,14 +10,16 @@ import numpy as np
 import pandas as pd
 import csv
 import sys
+import os
 
 RunSettings = namedtuple("RunSettings", ["model_name", "pre_trained_weights", "include_top", "all_trainable",
                                          "dataset_name", "batch_size", "epochs", "optimizer", "lr",
                                          "momentum", "decay", "nesterov"])
 
 def run_name_for(settings):
-    return "{}_pr_{}_al_{}_{}_e_{}_bs_{}_op_{}".format(settings.model_name, settings.pre_trained_weights, settings.all_trained,
-                                   settings.dataset_name, settings.epochs, settings.batch_size, settings.optimizer)
+    return "{}_pr_{}_al_{}_{}_e_{}_bs_{}_op_{}".format(settings.model_name, settings.pre_trained_weights,
+                                                       settings.all_trainable, settings.dataset_name, settings.epochs,
+                                                       settings.batch_size, settings.optimizer)
 
 def optimizers():
     return {"sgd": lambda settings: SGD(settings.lr, settings.momentum, settings.decay, settings.nesterov),
@@ -36,9 +38,13 @@ def compile_model(model, settings):
 
 
 def train_model(model, settings, train_images, train_labels, validation_images, validation_labels, verbose=True):
+    checkpoint_dir = ProjectPaths.checkpoint_dir_for(run_name_for(settings), settings.batch_size, settings.epochs)
+    if not os.path.exists(checkpoint_dir):
+        os.mkdir(checkpoint_dir)
+
     file_in_checkpoint_dir = ProjectPaths.file_in_checkpoint_dir(run_name_for(settings), settings.batch_size,
-                                                                 settings.epochs, "{}__{epoch:02d}_{val_acc:.2f}.hdf5"
-                                                                 .format(settings.model_name))
+                                                                 settings.epochs, settings.model_name +
+                                                                 "__{epoch:02d}_{val_acc:.2f}.hdf5")
 
     model_checkpoint_callback = ModelCheckpoint(file_in_checkpoint_dir, monitor='val_acc', verbose=verbose,
                                                 save_weights_only=True,
