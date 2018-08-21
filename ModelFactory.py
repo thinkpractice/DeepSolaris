@@ -21,6 +21,10 @@ class ModelFactory(object):
                 }
 
     @classmethod
+    def available_base_models(cls):
+        return ModelFactory.base_models().keys()
+
+    @classmethod
     def base_model_for(cls, settings):
         return ModelFactory.base_models()[settings.model_name](settings)
 
