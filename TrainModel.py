@@ -33,12 +33,13 @@ def compile_model(model, settings):
 
 
 def train_model(model, settings, train_images, train_labels, validation_images, validation_labels, verbose=True):
-    checkpoint_dir = ProjectPaths.checkpoint_dir_for(settings.model_name, settings.batch_size, settings.epochs)
-    # TODO change model checkpoint filename format!
-    model_checkpoint_callback = ModelCheckpoint(checkpoint_dir, monitor='val_acc', verbose=verbose,
-                                                save_weights_only=True,
-                                                save_best_only=True, mode='max', period=1)
+    file_in_checkpoint_dir = ProjectPaths.file_in_checkpoint_dir(settings.model_name, settings.batch_size,
+                                                                 settings.epochs, "{}__{epoch:02d}_{val_acc:.2f}.hdf5"
+                                                                 .format(settings.model_name))
 
+    model_checkpoint_callback = ModelCheckpoint(file_in_checkpoint_dir, monitor='val_acc', verbose=verbose,
+                                                save_weights_only=True,
+                                                save_best_only=True)
     log_dir = ProjectPaths.log_dir_for(settings.model_name, settings.batch_size, settings.epochs, settings.lr)
     tensorboard_callback = TensorBoard(log_dir=log_dir, histogram_freq=0,  write_graph=False, write_images=False)
 

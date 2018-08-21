@@ -39,3 +39,8 @@ class ProjectPaths(object):
     def logfile_in_log_dir(cls, filename_template):
         filename = filename_template.format(datetime.now().strftime("%Y%m%d_%H:%M:%S"))
         return os.path.join(ProjectPaths.log_dir(), filename)
+
+    @classmethod
+    def file_in_checkpoint_dir(cls, model_name, batch_size, epochs, filename_template):
+        checkpoint_dir= ProjectPaths.checkpoint_dir_for(model_name, batch_size, epochs)
+        return os.path.join(checkpoint_dir, filename_template)
