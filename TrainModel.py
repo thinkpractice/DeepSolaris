@@ -67,14 +67,13 @@ def evaluate_model(model, settings, datasets):
         column_headers.extend(["{}_{}".format(dataset.name, metric_name) for metric_name in model.metrics_names])
         column_values.extend(model.evaluate(dataset.images, dataset.labels, settings.batch_size))
 
-        column_headers.extend(["{}_{}_{}".format(dataset.name, cut_off, confusion_label)
-                               for confusion_label in ["tn", "fp", "fn", "tp"]
-                               for cut_off in cut_offs])
-        # Calculates confusion matrices for different cut-off at values
-        predicted_labels = [prediction < cut_off
-                            for prediction in model.predict(dataset.images)
-                            for cut_off in cut_offs]
-        column_values.extend(confusion_matrix(dataset.labels, predicted_labels).ravel())
+        for cut_off in cut_offs:
+            column_headers.extend(["{}_{}_{}".format(dataset.name, cut_off, confusion_label)
+                                   for confusion_label in ["tn", "fp", "fn", "tp"]])
+            # Calculates confusion matrices for different cut-off at values
+            predicted_labels = [prediction < cut_off
+                                for prediction in model.predict(dataset.images)]
+            column_values.extend(confusion_matrix(dataset.labels, predicted_labels).ravel())
 
     return column_headers, column_values
 
@@ -121,9 +120,9 @@ def load_run_settings(filename):
                         decay=None, nesterov=None)
             for model in ["vgg16", "vgg19", "xception", "resnet50"] #ModelFactory.available_base_models()
             for dataset in list(Datasets.available_datasets())[:-1]
-            for weights in ["imagenet", ""]
+            for weights in ["imagenet", None]
             for all_trainable in [False, True]
-            for epochs in [200]
+            for epochs in [1] #[200]
             for batch_size in [64]
             ]
 
