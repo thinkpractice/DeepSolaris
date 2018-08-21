@@ -114,7 +114,7 @@ def load_run_settings(filename):
                         lr=None, momentum=None,
                         decay=None, nesterov=None)
             for model in ["vgg16", "vgg19", "xception", "resnet50"] #ModelFactory.available_base_models()
-            for dataset in Datasets.available_datasets()[:-1]
+            for dataset in list(Datasets.available_datasets())[:-1]
             for weights in ["imagenet", ""]
             for all_trainable in [False, True]
             for epochs in [200]
