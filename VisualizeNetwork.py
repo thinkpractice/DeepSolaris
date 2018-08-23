@@ -9,7 +9,7 @@ import argparse
 from keras.preprocessing.image import save_img
 from keras.models import load_model
 from keras import backend as K
-
+from ModelFactory import ModelFactory
 
 def deprocess_image(x):
     # normalize tensor: center on 0., ensure std is 0.1
@@ -91,8 +91,9 @@ def visualize_filters(model, layer_name, filter_depth, img_height, img_width):
     return kept_filters
 
 
-def load_model_from_file(filename):
-    model = load_model(filename)
+def load_model_from_file(model_name, filename):
+    model = ModelFactory.model_for(model_name)
+    model.load_weights(filename)
     model.summary()
     return model
 
@@ -131,11 +132,12 @@ def visualize_all_layers(args, model):
 
 def main(argv):
     parser = argparse.ArgumentParser(description='Visualizes Keras neural network models')
+    parser.add_argument("model_name", type=str, help="The name of the base model, i.e vgg16, vgg19, etc.")
     parser.add_argument("filename", type=str, help="The model filename")
     parser.add_argument("--width", type=int, help="The width of the generated pictures for each filter", default=128)
     parser.add_argument("--height", type=int, help="The height of the generated pictures for each filter", default=128)
     parser.add_argument("--number_of_filters", type=int, help="The number of filter visualization to keep (n*n)", default=8)
-    parser.add_argument("--layer_name=", type=int, help="A specific layer to depict", default="")
+    parser.add_argument("--layer_name=", type=str, help="A specific layer to depict", default="")
 
     args = parser.parse_args()
     model = load_model_from_file(args.filename)
