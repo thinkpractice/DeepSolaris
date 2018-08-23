@@ -124,7 +124,7 @@ def load_run_settings(filename):
             for dataset in list(Datasets.available_datasets())[:-1]
             for weights in ["imagenet", None]
             for all_trainable in [False, True]
-            for epochs in [1] #[200]
+            for epochs in [200]
             for batch_size in [64]
             ]
 
