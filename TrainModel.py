@@ -2,7 +2,7 @@ from ProjectPaths import ProjectPaths
 from PerformanceMetrics import PerformanceMetrics
 from ModelFactory import ModelFactory
 from Datasets import Datasets
-from keras.callbacks import ModelCheckpoint, TensorBoard
+from keras.callbacks import ModelCheckpoint, TensorBoard, EarlyStopping
 from keras.optimizers import SGD, RMSprop
 from sklearn.metrics import confusion_matrix
 from collections import namedtuple
@@ -10,14 +10,16 @@ import numpy as np
 import pandas as pd
 import csv
 import sys
+import os
 
 RunSettings = namedtuple("RunSettings", ["model_name", "pre_trained_weights", "include_top", "all_trainable",
                                          "dataset_name", "batch_size", "epochs", "optimizer", "lr",
                                          "momentum", "decay", "nesterov"])
 
 def run_name_for(settings):
-    return "{}_pr_{}_al_{}_{}_e_{}_bs_{}_op_{}".format(settings.model_name, settings.pre_trained_weights, settings.all_trained,
-                                   settings.dataset_name, settings.epochs, settings.batch_size, settings.optimizer)
+    return "{}_pr_{}_al_{}_{}_e_{}_bs_{}_op_{}".format(settings.model_name, settings.pre_trained_weights,
+                                                       settings.all_trainable, settings.dataset_name, settings.epochs,
+                                                       settings.batch_size, settings.optimizer)
 
 def optimizers():
     return {"sgd": lambda settings: SGD(settings.lr, settings.momentum, settings.decay, settings.nesterov),
@@ -36,18 +38,23 @@ def compile_model(model, settings):
 
 
 def train_model(model, settings, train_images, train_labels, validation_images, validation_labels, verbose=True):
-    file_in_checkpoint_dir = ProjectPaths.file_in_checkpoint_dir(run_name_for(settings), settings.batch_size,
-                                                                 settings.epochs, "{}__{epoch:02d}_{val_acc:.2f}.hdf5"
-                                                                 .format(settings.model_name))
+    checkpoint_dir = ProjectPaths.checkpoint_dir_for(run_name_for(settings), settings.batch_size, settings.epochs)
+    if not os.path.exists(checkpoint_dir):
+        os.mkdir(checkpoint_dir)
 
+    file_in_checkpoint_dir = ProjectPaths.file_in_checkpoint_dir(run_name_for(settings), settings.batch_size,
+                                                                 settings.epochs, settings.model_name +
+                                                                 "__{epoch:02d}_{val_acc:.2f}.hdf5")
+
+    early_stopping_callback = EarlyStopping(patience=10)
     model_checkpoint_callback = ModelCheckpoint(file_in_checkpoint_dir, monitor='val_acc', verbose=verbose,
                                                 save_weights_only=True,
                                                 save_best_only=True)
-    log_dir = ProjectPaths.log_dir_for(settings.model_name, settings.batch_size, settings.epochs, settings.lr)
+    log_dir = os.path.join(ProjectPaths.log_dir(), run_name_for(settings))
     tensorboard_callback = TensorBoard(log_dir=log_dir, histogram_freq=0,  write_graph=False, write_images=False)
 
     model.fit(x=train_images, y=train_labels, epochs=settings.epochs,
-              callbacks=[model_checkpoint_callback, tensorboard_callback],
+              callbacks=[early_stopping_callback, model_checkpoint_callback, tensorboard_callback],
               validation_data=(validation_images, validation_labels), batch_size=settings.batch_size,
               verbose=verbose)
 
@@ -61,14 +68,13 @@ def evaluate_model(model, settings, datasets):
         column_headers.extend(["{}_{}".format(dataset.name, metric_name) for metric_name in model.metrics_names])
         column_values.extend(model.evaluate(dataset.images, dataset.labels, settings.batch_size))
 
-        column_headers.extend(["{}_{}_{}".format(dataset.name, cut_off, confusion_label)
-                               for confusion_label in ["tn", "fp", "fn", "tp"]
-                               for cut_off in cut_offs])
-        # Calculates confusion matrices for different cut-off at values
-        predicted_labels = [prediction < cut_off
-                            for prediction in model.predict(dataset.images)
-                            for cut_off in cut_offs]
-        column_values.extend(confusion_matrix(dataset.labels, predicted_labels).ravel())
+        for cut_off in cut_offs:
+            column_headers.extend(["{}_{}_{}".format(dataset.name, cut_off, confusion_label)
+                                   for confusion_label in ["tn", "fp", "fn", "tp"]])
+            # Calculates confusion matrices for different cut-off at values
+            predicted_labels = [prediction < cut_off
+                                for prediction in model.predict(dataset.images)]
+            column_values.extend(confusion_matrix(dataset.labels, predicted_labels).ravel())
 
     return column_headers, column_values
 
@@ -101,6 +107,7 @@ def train_evaluate_and_log(csv_filename, run_settings_list):
             values = [run_name]
             values.extend(evaluations)
             csv_writer.writerow(values)
+            csv_file.flush()
 
             run_names.append(run_name)
             column_headers.append(header)
@@ -115,7 +122,7 @@ def load_run_settings(filename):
                         decay=None, nesterov=None)
             for model in ["vgg16", "vgg19", "xception", "resnet50"] #ModelFactory.available_base_models()
             for dataset in list(Datasets.available_datasets())[:-1]
-            for weights in ["imagenet", ""]
+            for weights in ["imagenet", None]
             for all_trainable in [False, True]
             for epochs in [200]
             for batch_size in [64]
