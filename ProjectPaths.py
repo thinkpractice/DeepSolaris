@@ -42,5 +42,5 @@ class ProjectPaths(object):
 
     @classmethod
     def file_in_checkpoint_dir(cls, model_name, batch_size, epochs, filename_template):
-        checkpoint_dir= ProjectPaths.checkpoint_dir_for(model_name, batch_size, epochs)
+        checkpoint_dir = ProjectPaths.checkpoint_dir_for(model_name, batch_size, epochs)
         return os.path.join(checkpoint_dir, filename_template)
