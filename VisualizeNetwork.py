@@ -91,13 +91,6 @@ def visualize_filters(model, layer_name, filter_depth, img_height, img_width):
     return kept_filters
 
 
-def load_model_from_file(model_name, filename):
-    model = ModelFactory.model_for(model_name)
-    model.load_weights(filename)
-    model.summary()
-    return model
-
-
 def create_filter_visualization(img_height, img_width, kept_filters, number_of_filters, layer_name):
     # the filters that have the highest loss are assumed to be better-looking.
     filter_width = 16
@@ -142,7 +135,7 @@ def main(argv):
     parser.add_argument("--layer_name", type=str, help="A specific layer to depict", default="")
 
     args = parser.parse_args()
-    model = load_model_from_file(args.model_name, args.filename)
+    model = ModelFactory.load_model_from_file(args.model_name, args.filename)
     if not args.layer_name:
         visualize_all_layers(args, model)
     else:

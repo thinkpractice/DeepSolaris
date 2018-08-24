@@ -53,3 +53,10 @@ class ModelFactory(object):
     def model_for(cls, model_name, all_trainable=False):
         base_model = ModelFactory.base_model_for(model_name)(None, False)
         return cls.build_model(base_model, all_trainable)
+
+    @classmethod
+    def load_model_from_file(cls, model_name, filename):
+        model = ModelFactory.model_for(model_name)
+        model.load_weights(filename)
+        model.summary()
+        return model
