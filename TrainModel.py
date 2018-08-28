@@ -4,6 +4,7 @@ from ModelFactory import ModelFactory
 from Datasets import Datasets
 from keras.callbacks import ModelCheckpoint, TensorBoard, EarlyStopping
 from keras.optimizers import SGD, RMSprop
+from keras.utils import to_categorical
 from sklearn.metrics import confusion_matrix
 from collections import namedtuple
 import numpy as np
@@ -14,7 +15,7 @@ import os
 
 RunSettings = namedtuple("RunSettings", ["model_name", "last_vgg_layer", "pre_trained_weights", "include_top", "all_trainable",
                                          "dataset_name", "batch_size", "epochs", "optimizer", "lr",
-                                         "momentum", "decay", "nesterov"])
+                                         "momentum", "decay", "nesterov", "one_hot"])
 
 def run_name_for(settings):
     return "{}_pr_{}_al_{}_{}_e_{}_bs_{}_op_{}".format(settings.model_name, settings.pre_trained_weights,
@@ -58,6 +59,8 @@ def train_model(model, settings, train_images, train_labels, validation_images, 
               validation_data=(validation_images, validation_labels), batch_size=settings.batch_size,
               verbose=verbose)
 
+def prediction_for(predicted_value, cut_off, one_hot):
+    return predicted_value.max() < cut_off if one_hot else predicted_value < cut_off
 
 def evaluate_model(model, settings, datasets):
     column_headers = list(settings._fields)
@@ -66,15 +69,15 @@ def evaluate_model(model, settings, datasets):
     cut_offs = [0.1 + 0.1 * i for i in range(8)]
     for dataset in datasets:
         column_headers.extend(["{}_{}".format(dataset.name, metric_name) for metric_name in model.metrics_names])
-        column_values.extend(model.evaluate(dataset.images, dataset.labels, settings.batch_size))
+        column_values.extend(model.evaluate(dataset.images, get_labels(dataset.labels, settings.one_hot), settings.batch_size))
 
         for cut_off in cut_offs:
             column_headers.extend(["{}_{}_{}".format(dataset.name, cut_off, confusion_label)
                                    for confusion_label in ["tn", "fp", "fn", "tp"]])
             # Calculates confusion matrices for different cut-off at values
-            predicted_labels = [prediction < cut_off
+            predicted_labels = [prediction_for(prediction, cut_off, settings.one_hot)
                                 for prediction in model.predict(dataset.images)]
-            column_values.extend(confusion_matrix(dataset.labels, predicted_labels).ravel())
+            column_values.extend(confusion_matrix(get_labels(dataset, settings.one_hot), predicted_labels).ravel())
 
     return column_headers, column_values
 
@@ -87,10 +90,16 @@ def train_and_evaluate(run_settings_list):
         compiled_model = compile_model(model, run_settings)
 
         dataset = Datasets.dataset_for(run_settings.dataset_name)
-        train_model(compiled_model, run_settings, dataset[0].images, dataset[0].labels, dataset[2].images, dataset[2].labels)
+        train_labels = get_labels(dataset[0], run_settings.one_hot)
+        test_labels = get_labels(dataset[2], run_settings.one_hot)
+        train_model(compiled_model, run_settings, dataset[0].images, train_labels, dataset[2].images, test_labels)
 
         headers, values = evaluate_model(compiled_model, run_settings, dataset)
         yield run_name, headers, values
+
+
+def get_labels(dataset, one_hot):
+    return dataset.labels if not one_hot else to_categorical(dataset.labels)
 
 
 def train_evaluate_and_log(csv_filename, run_settings_list):
@@ -119,7 +128,7 @@ def load_run_settings(filename):
     return [RunSettings(model_name="vgg16_gap", last_vgg_layer=last_layer, pre_trained_weights=weights, include_top=False, all_trainable=all_trainable,
                         dataset_name=dataset, batch_size=batch_size, epochs=epochs, optimizer="rmsprop",
                         lr=None, momentum=None,
-                        decay=None, nesterov=None)
+                        decay=None, nesterov=None, one_hot=True)
             for last_layer in ["block2_conv2", "block3_conv3", "block4_conv3", "block5_conv3"]
             for dataset in list(Datasets.available_datasets())[:-1]
             for weights in ["imagenet"]
@@ -131,7 +140,7 @@ def load_run_settings(filename):
 # [RunSettings(model_name=model, last_vgg_layer="", pre_trained_weights=weights, include_top=False, all_trainable=all_trainable,
 #                         dataset_name=dataset, batch_size=batch_size, epochs=epochs, optimizer="rmsprop",
 #                         lr=None, momentum=None,
-#                         decay=None, nesterov=None)
+#                         decay=None, nesterov=None, one_hot=False)
 #             for model in ["vgg16", "vgg19", "xception", "resnet50"] #ModelFactory.available_base_models()
 #             for dataset in list(Datasets.available_datasets())[:-1]
 #             for weights in ["imagenet", None]
