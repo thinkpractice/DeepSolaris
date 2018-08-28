@@ -7,9 +7,8 @@ import time
 import sys
 import argparse
 from keras.preprocessing.image import save_img
-from keras.models import load_model
 from keras import backend as K
-
+from ModelFactory import ModelFactory
 
 def deprocess_image(x):
     # normalize tensor: center on 0., ensure std is 0.1
@@ -34,13 +33,13 @@ def normalize(x):
     return x / (K.sqrt(K.mean(K.square(x))) + K.epsilon())
 
 
-def visualize_filters(model, layer_name, img_height, img_width):
+def visualize_filters(model, layer_name, filter_depth, img_height, img_width):
     # this is the placeholder for the input images
     input_img = model.input
     # get the symbolic outputs of each "key" layer (we gave them unique names).
     layer_dict = dict([(layer.name, layer) for layer in model.layers[1:]])
     kept_filters = []
-    for filter_index in range(200):
+    for filter_index in range(filter_depth):
         # we only scan through the first 200 filters,
         # but there are actually 512 of them
         print('Processing filter %d' % filter_index)
@@ -74,6 +73,7 @@ def visualize_filters(model, layer_name, img_height, img_width):
         input_img_data = (input_img_data - 0.5) * 20 + 128
 
         # we run gradient ascent for 20 steps
+        loss_value = 0
         for i in range(20):
             loss_value, grads_value = iterate([input_img_data])
             input_img_data += grads_value * step
@@ -84,55 +84,62 @@ def visualize_filters(model, layer_name, img_height, img_width):
                 break
 
         # decode the resulting input image
-        if loss_value > 0:
-            img = deprocess_image(input_img_data[0])
-            kept_filters.append((img, loss_value))
+        img = deprocess_image(input_img_data[0])
+        kept_filters.append((img, loss_value))
         end_time = time.time()
         print('Filter %d processed in %ds' % (filter_index, end_time - start_time))
     return kept_filters
 
 
-def load_model_from_file(filename):
-    model = load_model(filename)
-    model.summary()
-    return model
-
-
-def create_filter_visualization(img_height, img_width, kept_filters, n, layer_name):
+def create_filter_visualization(img_height, img_width, kept_filters, number_of_filters, layer_name):
     # the filters that have the highest loss are assumed to be better-looking.
-    # we will only keep the top 64 filters.
+    filter_width = 16
+    filter_height = number_of_filters // 16
+    print("filter_width={}, filter_height={}, number_of_filters={}".format(filter_width, filter_height, number_of_filters))
+
     kept_filters.sort(key=lambda x: x[1], reverse=True)
-    kept_filters = kept_filters[:n * n]
     # build a black picture with enough space for
-    # our 8 x 8 filters of size 128 x 128, with a 5px margin in between
     margin = 5
-    width = n * img_width + (n - 1) * margin
-    height = n * img_height + (n - 1) * margin
-    stitched_filters = np.zeros((width, height, 3))
+    width = filter_width * img_width + (filter_width - 1) * margin
+    height = filter_height * img_height + (filter_height - 1) * margin
+    print("width={}, height={}".format(width, height))
+    stitched_filters = np.zeros((height, width, 3))
     # fill the picture with our saved filters
-    for i in range(n):
-        for j in range(n):
-            img, loss = kept_filters[i * n + j]
-            stitched_filters[(img_width + margin) * i: (img_width + margin) * i + img_width,
-            (img_height + margin) * j: (img_height + margin) * j + img_height, :] = img
+    for column in range(filter_width):
+        for row in range(filter_height):
+            img, loss = kept_filters[row * filter_width + column]
+            stitched_filters[(img_height + margin) * row: (img_height + margin) * row + img_height,
+            (img_width + margin) * column: (img_width + margin) * column + img_width, :] = img
 
     # save the result to disk
-    save_img(layer_name + '_stitched_filters_%dx%d.png' % (n, n), stitched_filters)
+    save_img(layer_name + '_stitched_filters_%dx%d.png' % (filter_height, filter_width), stitched_filters)
+
+
+def visualize_layer(args, layer_name, model):
+    layer = model.get_layer(layer_name)
+    kept_filters = visualize_filters(model, layer_name, layer.output_shape[3], args.height, args.width)
+    create_filter_visualization(args.height, args.width, kept_filters, layer.output_shape[3], layer_name)
+
+def visualize_all_layers(args, model):
+    for layer in model.layers:
+        # we will stitch the best filters on a number_of_filters x number_of_filters grid.
+        visualize_layer(args, layer.name, model)
 
 
 def main(argv):
     parser = argparse.ArgumentParser(description='Visualizes Keras neural network models')
+    parser.add_argument("model_name", type=str, help="The name of the base model, i.e vgg16, vgg19, etc.")
     parser.add_argument("filename", type=str, help="The model filename")
     parser.add_argument("--width", type=int, help="The width of the generated pictures for each filter", default=128)
     parser.add_argument("--height", type=int, help="The height of the generated pictures for each filter", default=128)
-    parser.add_argument("--number_of_filters", type=int, help="The number of filter visualization to keep (n*n)", default=8)
+    parser.add_argument("--layer_name", type=str, help="A specific layer to depict", default="")
 
     args = parser.parse_args()
-    model = load_model_from_file(args.filename)
-    for layer in model.layers:
-        # we will stitch the best filters on a number_of_filters x number_of_filters grid.
-        kept_filters = visualize_filters(model, layer.name, args.height, args.width)
-        create_filter_visualization(args.height, args.width, kept_filters, args.number_of_filters, layer.name)
+    model = ModelFactory.load_model_from_file(args.model_name, args.filename)
+    if not args.layer_name:
+        visualize_all_layers(args, model)
+    else:
+        visualize_layer(args, args.layer_name, model)
 
 
 if __name__ == "__main__":
