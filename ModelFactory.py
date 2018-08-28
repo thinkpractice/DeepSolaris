@@ -63,7 +63,7 @@ class ModelFactory(object):
 
     @classmethod
     def vgg16_gap(cls, last_vgg_layer="block3_conv3"):
-        base_model = ModelFactory.base_models()["vgg16"]
+        base_model = ModelFactory.model_for("vgg16")
         last_conv_layer = base_model.get_layer(last_vgg_layer)
         x = GlobalAveragePooling2D(last_conv_layer.output)
         predictions = Dense(2, activation="softmax", init="uniform")(x)
