@@ -12,7 +12,7 @@ import csv
 import sys
 import os
 
-RunSettings = namedtuple("RunSettings", ["model_name", "pre_trained_weights", "include_top", "all_trainable",
+RunSettings = namedtuple("RunSettings", ["model_name", "last_vgg_layer", "pre_trained_weights", "include_top", "all_trainable",
                                          "dataset_name", "batch_size", "epochs", "optimizer", "lr",
                                          "momentum", "decay", "nesterov"])
 
@@ -116,19 +116,29 @@ def train_evaluate_and_log(csv_filename, run_settings_list):
 
 
 def load_run_settings(filename):
-    return [RunSettings(model_name=model, pre_trained_weights=weights, include_top=False, all_trainable=all_trainable,
+    return [RunSettings(model_name="vgg16_gap", last_vgg_layer=last_layer, pre_trained_weights=weights, include_top=False, all_trainable=all_trainable,
                         dataset_name=dataset, batch_size=batch_size, epochs=epochs, optimizer="rmsprop",
                         lr=None, momentum=None,
                         decay=None, nesterov=None)
-            for model in ["vgg16", "vgg19", "xception", "resnet50"] #ModelFactory.available_base_models()
+            for last_layer in ["block2_conv2", "block3_conv3", "block4_conv3", "block5_conv3"]
             for dataset in list(Datasets.available_datasets())[:-1]
-            for weights in ["imagenet", None]
-            for all_trainable in [False, True]
+            for weights in ["imagenet"]
+            for all_trainable in [False]
             for epochs in [200]
             for batch_size in [64]
             ]
 
-
+# [RunSettings(model_name=model, last_vgg_layer="", pre_trained_weights=weights, include_top=False, all_trainable=all_trainable,
+#                         dataset_name=dataset, batch_size=batch_size, epochs=epochs, optimizer="rmsprop",
+#                         lr=None, momentum=None,
+#                         decay=None, nesterov=None)
+#             for model in ["vgg16", "vgg19", "xception", "resnet50"] #ModelFactory.available_base_models()
+#             for dataset in list(Datasets.available_datasets())[:-1]
+#             for weights in ["imagenet", None]
+#             for all_trainable in [False, True]
+#             for epochs in [200]
+#             for batch_size in [64]
+#             ]
 
 def main(argv):
     if len(argv) <= 1:

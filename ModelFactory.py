@@ -46,6 +46,9 @@ class ModelFactory(object):
 
     @classmethod
     def model_for_settings(cls, settings):
+        if settings.model_name == "vgg16_gap":
+            return cls.vgg16_gap(settings.last_vgg_layer)
+
         base_model = ModelFactory.base_model_for_settings(settings)
         return cls.build_model(base_model, settings)
 
