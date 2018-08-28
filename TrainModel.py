@@ -18,7 +18,7 @@ RunSettings = namedtuple("RunSettings", ["model_name", "last_vgg_layer", "pre_tr
                                          "momentum", "decay", "nesterov", "one_hot"])
 
 def run_name_for(settings):
-    return "{}_pr_{}_al_{}_{}_e_{}_bs_{}_op_{}".format(settings.model_name, settings.pre_trained_weights,
+    return "{}_pr_{}_{}_al_{}_{}_e_{}_bs_{}_op_{}".format(settings.model_name, settings.last_vgg_layer, settings.pre_trained_weights,
                                                        settings.all_trainable, settings.dataset_name, settings.epochs,
                                                        settings.batch_size, settings.optimizer)
 
