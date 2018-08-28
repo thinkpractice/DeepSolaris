@@ -69,7 +69,7 @@ def evaluate_model(model, settings, datasets):
     cut_offs = [0.1 + 0.1 * i for i in range(8)]
     for dataset in datasets:
         column_headers.extend(["{}_{}".format(dataset.name, metric_name) for metric_name in model.metrics_names])
-        column_values.extend(model.evaluate(dataset.images, get_labels(dataset.labels, settings.one_hot), settings.batch_size))
+        column_values.extend(model.evaluate(dataset.images, get_labels(dataset, settings.one_hot), settings.batch_size))
 
         for cut_off in cut_offs:
             column_headers.extend(["{}_{}_{}".format(dataset.name, cut_off, confusion_label)
