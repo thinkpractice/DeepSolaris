@@ -87,6 +87,7 @@ def train_and_evaluate(run_settings_list):
         run_name = run_name_for(run_settings)
         print("Training and evaluating: {}".format(run_name))
         model = ModelFactory.model_for_settings(run_settings)
+        model.summary()
         compiled_model = compile_model(model, run_settings)
 
         dataset = Datasets.dataset_for(run_settings.dataset_name)
