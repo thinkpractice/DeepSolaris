@@ -77,7 +77,7 @@ def evaluate_model(model, settings, datasets):
             # Calculates confusion matrices for different cut-off at values
             predicted_labels = [prediction_for(prediction, cut_off, settings.one_hot)
                                 for prediction in model.predict(dataset.images)]
-            column_values.extend(confusion_matrix(get_labels(dataset, settings.one_hot), predicted_labels).ravel())
+            column_values.extend(confusion_matrix(dataset.labels, predicted_labels).ravel())
 
     return column_headers, column_values
 
