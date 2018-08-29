@@ -54,6 +54,8 @@ class ModelFactory(object):
 
     @classmethod
     def model_for(cls, model_name, all_trainable=False):
+        if model_name == "vgg16_gap":
+            return cls.vgg16_gap()
         base_model = ModelFactory.base_model_for(model_name)(None, False)
         return cls.build_model(base_model, all_trainable)
 
