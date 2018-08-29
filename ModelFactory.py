@@ -74,5 +74,5 @@ class ModelFactory(object):
         base_model = ModelFactory.base_model_for("vgg16")("imagenet", False)
         last_conv_layer = base_model.get_layer(last_vgg_layer)
         x = GlobalAveragePooling2D()(last_conv_layer.output)
-        predictions = Dense(2, activation="softmax", init="uniform")(x)
+        predictions = Dense(2, activation="softmax", kernel_initializer="uniform")(x)
         return cls.new_model_for(all_trainable, base_model, predictions)
