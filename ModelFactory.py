@@ -34,11 +34,14 @@ class ModelFactory(object):
 
     @classmethod
     def build_model(cls, base_model, all_trainable):
-        base_model.summary()
         x = base_model.output
         x = GlobalAveragePooling2D()(x)
         x = Dense(1024, activation='relu')(x)
         predictions = Dense(1, activation='sigmoid')(x)
+        return cls.new_model_for(all_trainable, base_model, predictions)
+
+    @classmethod
+    def new_model_for(cls, all_trainable, base_model, predictions):
         model = Model(inputs=base_model.input, outputs=predictions)
         for layer in base_model.layers:
             layer.trainable = all_trainable
@@ -67,9 +70,9 @@ class ModelFactory(object):
         return model
 
     @classmethod
-    def vgg16_gap(cls, last_vgg_layer="block3_conv3"):
+    def vgg16_gap(cls, last_vgg_layer="block3_conv3", all_trainable=False):
         base_model = ModelFactory.base_model_for("vgg16")("imagenet", False)
         last_conv_layer = base_model.get_layer(last_vgg_layer)
         x = GlobalAveragePooling2D()(last_conv_layer.output)
         predictions = Dense(2, activation="softmax", init="uniform")(x)
-        return Model(inputs=base_model.input, outputs=predictions)
+        return cls.new_model_for(all_trainable, base_model, predictions)
