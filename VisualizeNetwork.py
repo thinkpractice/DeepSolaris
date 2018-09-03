@@ -7,6 +7,7 @@ import time
 import sys
 import argparse
 from keras.preprocessing.image import save_img
+from keras.layers import InputLayer
 from keras import backend as K
 from ModelFactory import ModelFactory
 
@@ -123,6 +124,8 @@ def visualize_layer(layer_name, model, height=128, width=128):
 def visualize_all_layers(model, height=128, width=128):
     for layer in model.layers:
         # we will stitch the best filters on a number_of_filters x number_of_filters grid.
+        if type(layer) == InputLayer:
+            continue
         visualize_layer(layer.name, model, height, width)
 
 
