@@ -115,12 +115,12 @@ def create_filter_visualization(img_height, img_width, kept_filters, number_of_f
     save_img(layer_name + '_stitched_filters_%dx%d.png' % (filter_height, filter_width), stitched_filters)
 
 
-def visualize_layer(layer_name, model, height, width):
+def visualize_layer(layer_name, model, height=128, width=128):
     layer = model.get_layer(layer_name)
     kept_filters = visualize_filters(model, layer_name, layer.output_shape[3], height, width)
     create_filter_visualization(height, width, kept_filters, layer.output_shape[3], layer_name)
 
-def visualize_all_layers(model, height, width):
+def visualize_all_layers(model, height=128, width=128):
     for layer in model.layers:
         # we will stitch the best filters on a number_of_filters x number_of_filters grid.
         visualize_layer(layer.name, model, height, width)
