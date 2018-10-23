@@ -2,45 +2,54 @@ from datetime import datetime
 import os
 
 class ProjectPaths(object):
-    @classmethod
-    def base_dir(cls):
-        return r"/media/tim/Data/Work/CBS/Code_hannah"
+    project_paths_instance = None
+
+    def __init__(self, base_dir):
+        self.__base_dir = base_dir
 
     @classmethod
-    def image_dir(cls):
-        return os.path.join(ProjectPaths.base_dir(), "Images")
+    def instance(cls, base_dir= r"/media/tim/Data/Work/CBS/Code_hannah"):
+        if not cls.project_paths_instance:
+            cls.project_paths_instance = ProjectPaths(base_dir)
+        return cls.project_paths_instance
 
-    @classmethod
-    def file_in_image_dir(cls, filename):
-        return os.path.join(ProjectPaths.image_dir(), filename)
+    @property
+    def base_dir(self):
+        return self.__base_dir
 
-    @classmethod
-    def model_dir(cls):
-        return os.path.join(ProjectPaths.base_dir(), "Models")
+    @property
+    def image_dir(self):
+        return os.path.join(self.base_dir, "Images")
 
-    @classmethod
-    def log_dir(cls):
-        return os.path.join(ProjectPaths.base_dir(), "Logs")
+    @property
+    def model_dir(self):
+        return os.path.join(self.base_dir, "Models")
 
-    @classmethod
-    def log_dir_for(cls, model_name, batch_size, epochs, lr):
+    @property
+    def log_dir(self):
+        return os.path.join(self.base_dir, "Logs")
+
+    def file_in_base_dir(self, filename):
+        return os.path.join(self.base_dir, filename)
+
+    def file_in_image_dir(self, filename):
+        return os.path.join(self.image_dir, filename)
+
+    def log_dir_for(self, model_name, batch_size, epochs, lr):
         date = str(datetime.now().date())
         learning_rate = "default_lr" if not lr else str(lr)
         log_dir_name = model_name + "_" + date + "_" + str(batch_size) + "_" + str(epochs) + "_" + learning_rate
-        return os.path.join(ProjectPaths.log_dir(),  log_dir_name)
+        return os.path.join(self.log_dir,  log_dir_name)
 
-    @classmethod
-    def checkpoint_dir_for(cls, model_name, batch_size, epochs):
+    def checkpoint_dir_for(self, model_name, batch_size, epochs):
         date = str(datetime.now().date())
         check_point_dir = model_name + "_" + date + "_" + str(batch_size) + "_" + str(epochs)
-        return os.path.join(ProjectPaths.model_dir(), check_point_dir)
+        return os.path.join(self.model_dir, check_point_dir)
 
-    @classmethod
-    def logfile_in_log_dir(cls, filename_template):
+    def logfile_in_log_dir(self, filename_template):
         filename = filename_template.format(datetime.now().strftime("%Y%m%d_%H:%M:%S"))
-        return os.path.join(ProjectPaths.log_dir(), filename)
+        return os.path.join(self.log_dir, filename)
 
-    @classmethod
-    def file_in_checkpoint_dir(cls, model_name, batch_size, epochs, filename_template):
-        checkpoint_dir = ProjectPaths.checkpoint_dir_for(model_name, batch_size, epochs)
+    def file_in_checkpoint_dir(self, model_name, batch_size, epochs, filename_template):
+        checkpoint_dir = self.checkpoint_dir_for(model_name, batch_size, epochs)
         return os.path.join(checkpoint_dir, filename_template)
