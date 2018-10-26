@@ -1,14 +1,24 @@
 from datetime import datetime
 import os
+import socket
 
 class ProjectPaths(object):
     project_paths_instance = None
+    base_dirs = {"tim-Z370-AORUS-Gaming-7":  r"/media/tim/Data/Work/CBS/DeepSolaris",
+                 "": r"/home/tdjg/Documents/DeepSolaris",
+                 }
 
     def __init__(self, base_dir):
         self.__base_dir = base_dir
 
     @classmethod
-    def instance(cls, base_dir= r"/media/tim/Data/Work/CBS/Code_hannah"):
+    def base_dir_for_machine(self):
+        return self.base_dirs[socket.gethostname()]
+
+    @classmethod
+    def instance(cls, base_dir=None):
+        if not base_dir:
+            base_dir = cls.base_dir_for_machine()
         if not cls.project_paths_instance:
             cls.project_paths_instance = ProjectPaths(base_dir)
         return cls.project_paths_instance
