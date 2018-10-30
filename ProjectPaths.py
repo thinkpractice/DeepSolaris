@@ -5,7 +5,7 @@ import socket
 class ProjectPaths(object):
     project_paths_instance = None
     base_dirs = {"tim-Z370-AORUS-Gaming-7":  r"/media/tim/Data/Work/CBS/DeepSolaris",
-                 "": r"/home/tdjg/Documents/DeepSolaris",
+                 "gebruiker-HP-EliteBook-840-G5": r"/home/tdjg/Documents/DeepSolaris",
                  }
 
     def __init__(self, base_dir):
