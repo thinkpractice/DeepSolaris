@@ -2,6 +2,7 @@ from keras.models import Model
 from keras.layers import Dense, GlobalAveragePooling2D
 from keras.applications import *
 
+
 class ModelFactory(object):
     @classmethod
     def base_models(cls):
@@ -76,3 +77,20 @@ class ModelFactory(object):
         x = GlobalAveragePooling2D()(last_conv_layer.output)
         predictions = Dense(2, activation="softmax", kernel_initializer="uniform")(x)
         return cls.new_model_for(all_trainable, base_model, predictions)
+
+    @classmethod
+    def vgg16_gap_sigmoid(cls):
+        base_model = ModelFactory.base_model_for("vgg16")("imagenet", False)
+        train_from_layer = -2
+        for layer in base_model.layers[:train_from_layer]:
+            layer.trainable = False
+            print("{} is not trainable".format(layer.name))
+        for layer in base_model.layers[train_from_layer:]:
+            layer.trainable = True
+            print("{} is trainable".format(layer.name))
+        last_conv_layer = base_model.get_layer("block5_conv3")
+        x = GlobalAveragePooling2D()(last_conv_layer.output)
+        x = Dense(512, activation="relu")(x)
+        predictions = Dense(1, activation="sigmoid")(x)
+        return Model(base_model.input, predictions)
+

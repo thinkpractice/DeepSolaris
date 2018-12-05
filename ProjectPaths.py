@@ -2,6 +2,7 @@ from datetime import datetime
 import os
 import socket
 
+
 class ProjectPaths(object):
     project_paths_instance = None
     base_dirs = {"tim-Z370-AORUS-Gaming-7":  r"/media/tim/Data/Work/CBS/DeepSolaris",
