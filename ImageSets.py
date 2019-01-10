@@ -36,9 +36,16 @@ class ImageSets(object):
         return self.__root_path
 
     @property
+    def all(self):
+        return FileFilter(os.listdir(self.root_path), "")
+
+    @property
     def rgb(self):
         return FileFilter(os.listdir(self.root_path), "rgb")
 
     @property
     def ir(self):
         return FileFilter(os.listdir(self.root_path), "ir")
+
+    #def year(self, year):
+
