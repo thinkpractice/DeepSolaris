@@ -27,7 +27,7 @@ class FileFilter(object):
         return sorted([filename for filename in file_paths if filter_function(filename)])
 
 
-class ImageSets(object):
+class DirectoryFilter(object):
     def __init__(self, root_path):
         self.__root_path = root_path
 
@@ -39,16 +39,11 @@ class ImageSets(object):
     def all(self):
         return FileFilter(os.listdir(self.root_path), "")
 
-    @property
-    def rgb(self):
-        return FileFilter(os.listdir(self.root_path), "rgb")
-
-    @property
-    def ir(self):
-        return FileFilter(os.listdir(self.root_path), "ir")
+    def __getattr__(self, filter_name):
+        return FileFilter(os.listdir(self.root_path), filter_name)
 
     def dir(self, filter_name):
         sub_path = os.path.join(self.root_path, filter_name)
         if not os.path.exists(sub_path):
             return self
-        return ImageSets(sub_path)
+        return DirectoryFilter(sub_path)
