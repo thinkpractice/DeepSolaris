@@ -103,6 +103,19 @@ class ImageSetsTests(unittest.TestCase):
                           "00036fd4-14a1-49a4-ae79-feaa26847d61_rgb_2013_masked.tiff"],
                          ImageSets(r"TestData/2013").all.masked)
 
+    def test_dir_returns_subdir_rgb_files(self):
+        self.assertEqual(["0000085b-6f4a-475a-b800-9ed7619e8a67_rgb_2013.tiff",
+                          "00001900-3f87-4a57-8e1a-8fbdf3127213_rgb_2013.tiff",
+                          "00023872-f873-4889-9b80-113677b9e86a_rgb_2013.tiff",
+                          "00024a4c-54fe-4d74-838b-20b8ee7f4777_rgb_2013.tiff",
+                          "00031d78-fd98-4371-ac7f-8f2ddf487021_rgb_2013.tiff",
+                          "00036fd4-14a1-49a4-ae79-feaa26847d61_rgb_2013.tiff"],
+                          ImageSets(r"TestData").dir("2013").rgb.images)
+
+    def test_not_existing_dir_returns_empty_list(self):
+        self.assertEqual([], ImageSets(r"TestData").dir("1900").rgb.images)
+
+
 
 if __name__ == '__main__':
     unittest.main()

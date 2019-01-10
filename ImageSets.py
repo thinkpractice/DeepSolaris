@@ -47,5 +47,8 @@ class ImageSets(object):
     def ir(self):
         return FileFilter(os.listdir(self.root_path), "ir")
 
-    #def year(self, year):
-
+    def dir(self, filter_name):
+        sub_path = os.path.join(self.root_path, filter_name)
+        if not os.path.exists(sub_path):
+            return self
+        return ImageSets(sub_path)
