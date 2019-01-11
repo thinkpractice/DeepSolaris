@@ -2,9 +2,9 @@ import os
 
 
 class FileFilter(object):
-    def __init__(self, file_list, filter=""):
+    def __init__(self, file_list, filter_name=""):
         self.__file_list = file_list
-        self.__filter = filter
+        self.__filter = filter_name
 
     @property
     def files(self):
