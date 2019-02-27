@@ -28,11 +28,11 @@ def write_images(annotation_filename, output_filename, merge_filename):
     labels, images = load_images(annotation_filename)
     if merge_filename:
         merge_labels, merge_images = load_images(merge_filename)
-        labels.append(merge_labels)
-        images.append(merge_images)
+        labels.extend(merge_labels)
+        images.extend(merge_images)
 
     np.save(output_filename, images)
-    np.save(label_filename(output_filename), labels)
+    np.save(label_filename(output_filename), np.array(labels))
 
 
 def main():
