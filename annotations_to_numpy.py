@@ -21,7 +21,7 @@ def load_images(annotation_filename):
 
 def label_filename(output_filename):
     path, ext = os.path.splitext(output_filename)
-    return "{}_labels.{}".format(path, ext)
+    return "{}_labels{}".format(path, ext)
 
 
 def write_images(annotation_filename, output_filename, merge_filename):

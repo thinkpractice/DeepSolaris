@@ -8,7 +8,7 @@ def write_annotations(annotations, output_filename):
         with open(output_filename, "r") as json_file:
             old_annotation_dict = json.load(json_file)
             old_annotations = old_annotation_dict["images"]
-            old_annotations.append(annotations)
+            old_annotations.extend(annotations)
             annotations = old_annotations
 
     with open(output_filename, "w") as output_file:
