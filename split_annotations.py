@@ -1,9 +1,17 @@
 import argparse
 import json
+import os
 
 
 def write_annotations(annotations, output_filename):
-    with open(output_filename, "a+") as output_file:
+    if os.path.exists(output_filename):
+        with open(output_filename, "r") as json_file:
+            old_annotation_dict = json.load(json_file)
+            old_annotations = old_annotation_dict["images"]
+            old_annotations.append(annotations)
+            annotations = old_annotations
+
+    with open(output_filename, "w") as output_file:
         json.dump({
             "current_page_index": 0,
             "images": annotations
