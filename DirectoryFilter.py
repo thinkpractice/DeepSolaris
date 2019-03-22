@@ -34,7 +34,8 @@ class FileFilter(object):
         return FileFilter(self.root_path, self.files, lambda filename: "masked" in filename)
 
     def filter_files(self, file_paths, filter_function, include_dir=False):
-        return sorted([self.filename_for(filename, include_dir=include_dir) for filename in file_paths if filter_function(filename)])
+        return sorted([self.filename_for(filename, include_dir=include_dir) for filename in file_paths
+                       if filter_function(filename)])
 
     def filename_for(self, filename, include_dir=False):
         return os.path.join(self.root_path, filename) if include_dir else filename
