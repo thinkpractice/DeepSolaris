@@ -19,7 +19,7 @@ def get_model():
     base_model = vgg16(input_shape=(187, 187, 3), include_top=False)
     for layer in base_model.layers:
         layer.trainable = True
-    last_conv_layer = base_model.get_layer("block5_pool")
+    last_conv_layer = base_model.get_layer("block4_pool")
     #x = GlobalAveragePooling2D()(last_conv_layer.output)
     x = Flatten()(last_conv_layer.output)
     x = Dense(512, activation="relu")(x)  # , kernel_regularizer=regularizers.l2(1e-4))(x)
