@@ -21,9 +21,11 @@ def main():
     labels = np.load(labels_path)
 
     trainX, validation_testX, trainY, validation_testY = train_test_split(dataset, labels,
-                                                                          test_size=args["test_percentage"])
+                                                                          test_size=args["test_percentage"],
+                                                                          stratify=labels)
     testX, validationX, testY, validationY = train_test_split(validation_testX, validation_testY,
-                                                              test_size=args["validation_percentage"])
+                                                              test_size=args["validation_percentage"],
+                                                              stratify=validation_testY)
 
     base_filename = os.path.basename(dataset_filename)
     filename, _ = os.path.splitext(base_filename)

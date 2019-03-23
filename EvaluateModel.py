@@ -1,5 +1,5 @@
 from keras.models import Model
-from keras.layers import GlobalAveragePooling2D, Dense, Dropout
+from keras.layers import GlobalAveragePooling2D, Dense, Dropout, Flatten
 from sklearn.metrics import classification_report, confusion_matrix
 from cbds.deeplearning.models import vgg16
 from sklearn.metrics import roc_curve
@@ -31,8 +31,11 @@ def find_optimal_cutoff(target, predicted):
 
 def get_model(model_path):
     base_model = vgg16(input_shape=(187, 187, 3), include_top=False)
+    for layer in base_model.layers:
+        layer.trainable = True
     last_conv_layer = base_model.get_layer("block5_pool")
-    x = GlobalAveragePooling2D()(last_conv_layer.output)
+    #x = GlobalAveragePooling2D()(last_conv_layer.output)
+    x = Flatten()(last_conv_layer.output)
     x = Dense(512, activation="relu")(x)  # , kernel_regularizer=regularizers.l2(1e-4))(x)
     x = Dropout(0.5)(x)
     x = Dense(512, activation="relu")(x)
