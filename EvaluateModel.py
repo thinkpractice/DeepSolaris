@@ -38,8 +38,8 @@ def get_model(model_path):
     x = Flatten()(last_conv_layer.output)
     x = Dense(512, activation="relu")(x)  # , kernel_regularizer=regularizers.l2(1e-4))(x)
     x = Dropout(0.5)(x)
-    x = Dense(512, activation="relu")(x)
-    x = Dropout(0.5)(x)
+    #x = Dense(512, activation="relu")(x)
+    #x = Dropout(0.5)(x)
     predictions = Dense(1, activation="sigmoid")(x)
     model = Model(base_model.input, predictions)
     model.load_weights(model_path)
@@ -59,8 +59,8 @@ def main():
 
     print("Loading data...")
     images = np.load(args["dataset"])
+    images = images / 255.
     labels = np.load(args["labels"])
-
     print("Evaluating data...")
     y_pred = model.predict(images, batch_size=64)
     y_pred = y_pred.reshape(y_pred.shape[0])

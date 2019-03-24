@@ -1,6 +1,6 @@
 from cbds.deeplearning.models import vgg16
 from keras.models import Model
-from keras.layers import GlobalAveragePooling2D, Dense, Dropout, Flatten
+from keras.layers import GlobalAveragePooling2D, Dense, Dropout, Flatten, MaxPooling2D
 from keras.preprocessing.image import ImageDataGenerator
 from keras.callbacks import ModelCheckpoint, TensorBoard, EarlyStopping
 from keras.optimizers import SGD
@@ -19,13 +19,13 @@ def get_model():
     base_model = vgg16(input_shape=(187, 187, 3), include_top=False)
     for layer in base_model.layers:
         layer.trainable = True
-    last_conv_layer = base_model.get_layer("block4_pool")
+    last_conv_layer = base_model.get_layer("block5_pool")
     #x = GlobalAveragePooling2D()(last_conv_layer.output)
     x = Flatten()(last_conv_layer.output)
     x = Dense(512, activation="relu")(x)  # , kernel_regularizer=regularizers.l2(1e-4))(x)
     x = Dropout(0.5)(x)
-    x = Dense(512, activation="relu")(x)
-    x = Dropout(0.5)(x)
+    #x = Dense(512, activation="relu")(x)
+    #x = Dropout(0.5)(x)
     predictions = Dense(1, activation="sigmoid")(x)
     model = Model(base_model.input, predictions)
     model.summary()
@@ -128,7 +128,7 @@ def main():
     epochs_ran = len(train_history.history["loss"])
     plot_loss_and_acc(train_history, epochs_ran)
 
-    y_pred = model.predict(test_images)
+    y_pred = model.predict_generator(test_generator, steps=len(test_labels) // batch_size)
     print(classification_report(test_labels, y_pred.round()))
     print(confusion_matrix(test_labels, y_pred.round()))
 
