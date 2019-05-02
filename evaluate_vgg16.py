@@ -11,7 +11,8 @@ def create_model(input_shape, layer_list):
     x = Dense(512, activation="relu")(x)
     x = Dropout(0.5)(x)
     predictions = Dense(1, activation="sigmoid")(x)
-    return Model(base_model.input, predictions)
+    model_name = "vgg16_{}".format("_".join(["{}_{}".format(layer_type, layer_size) for layer_type, layer_size in layer_list))
+    return model_name, Model(base_model.input, predictions)
 
 def create_models(input_shape):
     layer_depths = [64, 128, 256, 512, 512]
