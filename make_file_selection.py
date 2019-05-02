@@ -26,7 +26,7 @@ def main():
     parser.add_argument("-o", "--output", required=True, help="The output folder with the images to write")
     parser.add_argument("-m", "--merge", default=None, help="The annotation file to merge with the first")
     args = vars(parser.parse_args())
-    write_images(args["input"], args["output"], args["merge"])
+    copy_all_images(args["input"], args["output"], args["merge"])
 
 
 if __name__ == "__main__":
