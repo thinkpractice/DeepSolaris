@@ -32,9 +32,11 @@ def main():
                           .with_seed(42)\
                           .with_rotation_range(30)\
                           .with_width_shift_range(0.1)\
-                          .with_width_height_shift_range(0.1)\
-                          .with_zoom_range(0.1)\
-                          .with_horizontal_flip(True)
+                          .with_height_shift_range(0.1)\
+                          .with_zoom_range(0.2)\
+                          .with_shear_range(0.2)\
+                          .with_horizontal_flip(True)\
+                          .with_fill_mode("nearest")
 
         test_generator = ImageGenerator(test_dataset)\
                          .with_rescale(1/255.)\
