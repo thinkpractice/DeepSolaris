@@ -1,7 +1,6 @@
 from sklearn.svm import LinearSVC
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import classification_report
-from sklearn.utils.class_weight import compute_class_weight
 import argparse
 import pickle
 import h5py
@@ -16,11 +15,10 @@ db = h5py.File(args["db"], "r")
 labels = db["labels"]
 i = int(labels.shape[0] * 0.75)
 
-class_weights = compute_class_weight("balanced", np.unique(labels), labels)
 
 print("[INFO] tuning hyperparameters...")
 params = {"C": [0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0]}
-model = GridSearchCV(LinearSVC(class_weight=class_weights), params, cv=3, n_jobs=args["jobs"])
+model = GridSearchCV(LinearSVC(class_weight="balanced"), params, cv=3, n_jobs=args["jobs"])
 model.fit(db["features"][:i], db["labels"][:i])
 print("[INFO] best hyperparameters: {}".format(model.best_params_))
 

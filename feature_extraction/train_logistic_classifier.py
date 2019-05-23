@@ -14,10 +14,9 @@ args = vars(ap.parse_args())
 db = h5py.File(args["db"], "r")
 i = int(db["labels"].shape[0] * 0.75)
 
-class_weights = compute_class_weight("balanced", np.unique(db["labels"]), db["labels"])
 print("[INFO] tuning hyperparameters...")
 params = {"C": [0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0]}
-model = GridSearchCV(LogisticRegression(solver="lbfgs", multi_class="auto", class_weight=class_weights), params, cv=3, n_jobs=args["jobs"])
+model = GridSearchCV(LogisticRegression(solver="lbfgs", multi_class="auto", class_weight="balanced"), params, cv=3, n_jobs=args["jobs"])
 model.fit(db["features"][:i], db["labels"][:i])
 print("[INFO] best hyperparameters: {}".format(model.best_params_))
 
