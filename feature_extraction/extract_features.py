@@ -1,5 +1,6 @@
 from keras.applications import VGG16
 from keras.applications import imagenet_utils
+from keras.models import load_model
 from keras.preprocessing.image import img_to_array
 from keras.preprocessing.image import load_img
 from hdf5datasetwriter import HDF5DatasetWriter
@@ -13,6 +14,7 @@ import os
 ap = argparse.ArgumentParser()
 ap.add_argument("-d", "--dataset", required=True, help="path to input dataset")
 ap.add_argument("-l", "--labels", required=True, help="path to input labels")
+ap.add_argument("-m", "--model", required=True, help="path to the model used to extract features")
 ap.add_argument("-o", "--output", required=True, help="path to output HDF5 file")
 ap.add_argument("-b", "--batch-size", type=int, default=32, help="batch size of images to be passed through network")
 ap.add_argument("-s", "--buffer-size",type=int, default=1000, help="size of feature extraction buffer")
@@ -31,9 +33,13 @@ images = images[idxs]
 labels = labels[idxs]
 
 print("[INFO] loading network...")
-model = VGG16(weights="imagenet", include_top=False)
+image_shape = images[0].shape
+#model = VGG16(input_shape=image_shape, weights="imagenet", include_top=False)
+model = load_model(args["model"])
+model.summary()
 
-feature_vector_size = 512 * 5 * 5
+last_layer = model.get_layer(index=-1)
+feature_vector_size = last_layer.output_shape[1] * last_layer.output_shape[2] * last_layer.output_shape[3]
 dataset = HDF5DatasetWriter((len(images), feature_vector_size), args["output"], dataKey="features", bufSize=args["buffer_size"])
 dataset.storeClassLabels(np.unique(labels))
 
