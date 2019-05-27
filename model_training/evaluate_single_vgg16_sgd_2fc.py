@@ -1,7 +1,9 @@
 from sklearn.model_selection import RandomizedSearchCV
 from cbds.deeplearning import Project, ImageGenerator
 from cbds.deeplearning import ImageGenerator
+from cbds.deeplearning.settings import SGDSettings
 from cbds.deeplearning.models.vgg16 import vgg16
+from cbds.deeplearning.metrics import ClassificationReportCallback, ConfusionMatrixCallback, PlotRocCallback
 from scipy.stats import uniform
 from keras.layers import Dense, Dropout, Flatten
 from keras.models import Model
@@ -10,15 +12,19 @@ from itertools import product
 import os
 
 
-def create_vgg16_model(input_shape):
-    base_model = vgg16(input_shape, include_top=False, batch_normalization=False)
-    for layer in base_model.layers:
-        layer.trainable = False
+def create_vgg16_model(input_shape, layer_index=15):
+    base_model = vgg16(input_shape, include_top=False, batch_normalization=True)
+    for layer in base_model.layers[:layer_index]:
+        layer.trainable = True
+    for layer in base_model.layers[layer_index:]:
+        layer.trainable = True
     x = Flatten()(base_model.output)
     x = Dense(512, activation="relu")(x)
     x = Dropout(0.5)(x)
+    x = Dense(512, activation="relu")(x)
+    x = Dropout(0.5)(x)
     predictions = Dense(1, activation="sigmoid")(x)
-    model_name = "vgg16_full_fc512_fc1_aug_reduce_lr"
+    model_name = "vgg16_full_fc512_fc512_fc1_aug_frozen_sgd"
     return model_name, Model(base_model.input, predictions)
 
 
@@ -33,7 +39,6 @@ def main():
 
         train_generator = ImageGenerator(train_dataset)\
                           .with_rescale(1/255.)\
-                          .with_seed(42)\
                           .with_rotation_range(30)\
                           .with_width_shift_range(0.1)\
                           .with_height_shift_range(0.1)\
@@ -43,8 +48,7 @@ def main():
                           .with_fill_mode("reflect")
 
         test_generator = ImageGenerator(test_dataset)\
-                         .with_rescale(1/255.)\
-                         .with_seed(84)
+                         .with_rescale(1/255.)
 
         image_shape = dataset.data[0].shape
 
@@ -55,18 +59,21 @@ def main():
         model.plot()
         cnn_model.summary()
 
-
-        reduce_lr = ReduceLROnPlateau(monitor='val_acc', factor=0.1, patience=5, min_lr=1e-5)
-        model.random_search(train_generator, test_generator, param_distributions=dict(
-            epochs=[40],
-            batch_size=[32],
-            loss_function=["binary_crossentropy"],
-            lr=[1e-3],
-            momentum=[0.9],
-            nesterov=[False],
-            decay=[0],
-            callbacks=[[EarlyStopping(patience=5), reduce_lr]],
-        ), n_iter=10)
+        #        .with_callbacks([EarlyStopping(patience=5)])\
+        epochs = 15
+        lr = 1e-4
+        decay = lr / epochs
+        with model.run().with_epochs(epochs)\
+                .with_batch_size(64)\
+                .with_loss_function("binary_crossentropy")\
+                .with_optimizer(SGDSettings(lr=lr, momentum=0.9, decay=decay, nesterov=False))\
+                .with_metric_callbacks([ClassificationReportCallback(), ConfusionMatrixCallback(), PlotRocCallback()])\
+                .with_class_weights(train_dataset.class_weights)\
+                .with_train_dataset(train_generator)\
+                .with_test_dataset(test_generator)\
+                .with_evaluation_dataset(test_dataset) as run:
+                run.train()
+                run.evaluate()
 
 
 if __name__ == "__main__":

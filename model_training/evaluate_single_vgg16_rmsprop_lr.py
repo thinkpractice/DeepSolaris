@@ -1,24 +1,29 @@
 from sklearn.model_selection import RandomizedSearchCV
 from cbds.deeplearning import Project, ImageGenerator
 from cbds.deeplearning import ImageGenerator
+from cbds.deeplearning.settings import RMSPropSettings
 from cbds.deeplearning.models.vgg16 import vgg16
+from cbds.deeplearning.metrics import ClassificationReportCallback, ConfusionMatrixCallback, PlotRocCallback
 from scipy.stats import uniform
 from keras.layers import Dense, Dropout, Flatten
 from keras.models import Model
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau
+from keras import regularizers
 from itertools import product
 import os
 
 
-def create_vgg16_model(input_shape):
+def create_vgg16_model(input_shape, layer_index=15):
     base_model = vgg16(input_shape, include_top=False, batch_normalization=False)
-    for layer in base_model.layers:
+    for layer in base_model.layers[:layer_index]:
+        layer.trainable = False
+    for layer in base_model.layers[layer_index:]:
         layer.trainable = False
     x = Flatten()(base_model.output)
-    x = Dense(512, activation="relu")(x)
-    x = Dropout(0.5)(x)
-    predictions = Dense(1, activation="sigmoid")(x)
-    model_name = "vgg16_full_fc512_fc1_aug_reduce_lr"
+    #x = Dense(512, activation="relu")(x)
+    #x = Dropout(0.5)(x)
+    predictions = Dense(1, activation="sigmoid", kernel_regularizer=regularizers.l2(0.01))(x)
+    model_name = "vgg16_full_fc1_aug_frozen_rms_prop"
     return model_name, Model(base_model.input, predictions)
 
 
@@ -48,25 +53,25 @@ def main():
 
         image_shape = dataset.data[0].shape
 
-        name, cnn_model = create_vgg16_model(input_shape=image_shape)
+        name, cnn_model = create_vgg16_model(input_shape=image_shape, layer_index=7)
 
         model = project.model(name)
         model.create_model(cnn_model)
         model.plot()
         cnn_model.summary()
 
-
-        reduce_lr = ReduceLROnPlateau(monitor='val_acc', factor=0.1, patience=5, min_lr=1e-5)
-        model.random_search(train_generator, test_generator, param_distributions=dict(
-            epochs=[40],
-            batch_size=[32],
-            loss_function=["binary_crossentropy"],
-            lr=[1e-3],
-            momentum=[0.9],
-            nesterov=[False],
-            decay=[0],
-            callbacks=[[EarlyStopping(patience=5), reduce_lr]],
-        ), n_iter=10)
+        #        .with_callbacks([EarlyStopping(patience=5)])\
+        with model.run().with_epochs(10)\
+                .with_batch_size(32)\
+                .with_loss_function("binary_crossentropy")\
+                .with_optimizer(RMSPropSettings(lr=1e-4))\
+                .with_metric_callbacks([ClassificationReportCallback(), ConfusionMatrixCallback(), PlotRocCallback()])\
+                .with_class_weights(train_dataset.class_weights)\
+                .with_train_dataset(train_generator)\
+                .with_test_dataset(test_generator)\
+                .with_evaluation_dataset(test_dataset) as run:
+                run.train()
+                run.evaluate()
 
 
 if __name__ == "__main__":
