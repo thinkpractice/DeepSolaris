@@ -24,6 +24,7 @@ bs = args["batch_size"]
 print("[INFO] loading images...")
 
 images = np.load(args["dataset"])
+images = imagenet_utils.preprocess_input(image)
 labels = np.load(args["labels"])
 
 idxs = np.arange(0, images.shape[0])
