@@ -1,15 +1,10 @@
-from keras.applications import VGG16
-from keras.applications import imagenet_utils
-from keras.models import load_model
-from keras.preprocessing.image import img_to_array
-from keras.preprocessing.image import load_img
-from hdf5datasetwriter import HDF5DatasetWriter
-from imutils import paths
+import argparse
+
 import numpy as np
 import progressbar
-import argparse
-import random
-import os
+from .hdf5datasetwriter import HDF5DatasetWriter
+from keras.applications import imagenet_utils
+from keras.models import load_model
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-d", "--dataset", required=True, help="path to input dataset")
@@ -24,7 +19,7 @@ bs = args["batch_size"]
 print("[INFO] loading images...")
 
 images = np.load(args["dataset"])
-images = imagenet_utils.preprocess_input(image)
+images = imagenet_utils.preprocess_input(images[:, :, :, ::-1])
 labels = np.load(args["labels"])
 
 idxs = np.arange(0, images.shape[0])
