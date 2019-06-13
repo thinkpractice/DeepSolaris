@@ -30,7 +30,6 @@ labels = labels[idxs]
 
 print("[INFO] loading network...")
 image_shape = images[0].shape
-#model = VGG16(input_shape=image_shape, weights="imagenet", include_top=False)
 model = load_model(args["model"])
 model.summary()
 
