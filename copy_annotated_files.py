@@ -4,6 +4,7 @@ import os
 import shutil
 import progressbar
 
+
 def load_annotations(filename):
     with open(filename, "r") as json_file:
         annotations = json.load(json_file)
@@ -26,7 +27,7 @@ def copy_annotated_files(input_dataset, annotations, classes, output_dir):
         annotation_class = classes.get(annotation["annotation"], None)
         if not annotation_class:
             continue
-        src_file = os.path.join(input_dataset, os.path.basename(annotations["filename"]))
+        src_file = os.path.join(input_dataset, os.path.basename(annotation["filename"]))
         class_dir = os.path.join(output_dir, annotation_class)
         shutil.copy2(src_file, class_dir)
 
@@ -43,7 +44,7 @@ def main():
 
     classes, annotations = load_annotations(args["input"])
     create_if_not_exists(args["output"])
-    for annotation_class in classes:
+    for annotation_class in classes.values():
         create_if_not_exists(os.path.join(args["output"], annotation_class))
 
     copy_annotated_files(args["dataset"], annotations, classes, args["output"])
