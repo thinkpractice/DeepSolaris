@@ -6,7 +6,7 @@ from owslib.wms import WebMapService
 
 def create_dir(path):
     if not os.path.exists(path):
-        os.path.makedirs(path)
+        os.makedirs(path)
 
 def download_tile(wms_service, layer_name, longitude, latitude, width_in_pixels, dop_resolution, image_format):
     wms = WebMapService(wms_service, version='1.1.1')
@@ -16,11 +16,11 @@ def download_tile(wms_service, layer_name, longitude, latitude, width_in_pixels,
     bounding_box = (longitude - width_from_center, 
                     latitude - width_from_center,
                     longitude + width_from_center,
-                    latidude + width_from_center)
+                    latitude + width_from_center)
 
     return wms.getmap(layers=[layer_name], styles=['default'], srs='EPSG:25832',
                 bbox=bounding_box, 
-                size=(width_in_pixels, width_in_pixels), format='image/jpeg', transparent=True)
+                size=(width_in_pixels, width_in_pixels), format=image_format, transparent=True)
 
 def write_image(filename, image):
     with open(filename, 'wb') as image_file:
@@ -41,29 +41,29 @@ parser.add_argument("-o", "--output", required=True, help="The output directory"
 parser.add_argument("-s", "--wms_service", default="https://www.wms.nrw.de/geobasis/wms_nw_dop", help="The wms service to download pictures from")
 parser.add_argument("-l", "--layer", default="nw_dop_rgb", help="The layer to download from")
 parser.add_argument("-w", "--width", default=200, type=int, help="Tile width")
-parser.add_argument("-d", "--dop", default=10, type=int, help"The DOP resolution of the image")
+parser.add_argument("-d", "--dop", default=10, type=int, help="The DOP resolution of the image")
 parser.add_argument("-f", "--image-format", default="image/png", type=str, help="The image format to download")
-args = vars(args.parse_args())
+args = vars(parser.parse_args())
 
 create_dir(args["output"])
-create_dir(os.path.join(args["output"], "positives"))
-create_dir(os.path.join(args["output"], "negatives"))
+create_dir(os.path.join(args["output"], "positive"))
+create_dir(os.path.join(args["output"], "negative"))
 
 number_of_images = get_number_of_images(args["input"])
 widgets = ["Classifying images: ", progressbar.Percentage(), " ", progressbar.Bar(), " ", progressbar.ETA()]
 pbar = progressbar.ProgressBar(maxval=number_of_images, widgets=widgets).start()
 
 with open(args["input"], "r") as csv_file:
-    csv_reader = DictReader(csv_file, delimiter=";")
+    csv_reader = csv.DictReader(csv_file, delimiter=";")
     for i, row in enumerate(csv_reader):
-        longitude = float(csv_reader["x"])
-        latitude = float(csv_reader["y"])
-        label = "positive" if bool(csv_reader["label"]) else "negative"
+        longitude = float(row["x"])
+        latitude = float(row["y"])
+        label = "positive" if bool(row["label"]) else "negative"
         
         output_path = os.path.join(os.path.join(args["output"], label))
-        output_path = os.path.join(output_path, "{}.png".format(row["object_id"]))
+        output_path = os.path.join(output_path, "{}.{}".format(row["object_id"], args["image_format"].split("/")[-1])
 
-        tile_image = download_tile(args["wms_service"], args["layer"], longitude, latitude, output_path, args["width"], args["dop"], args["image_format"])
+        tile_image = download_tile(args["wms_service"], args["layer"], longitude, latitude, args["width"], args["dop"], args["image_format"])
         write_image(output_path, tile_image)
         pbar.update(i)
 
