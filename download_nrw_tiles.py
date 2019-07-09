@@ -2,6 +2,7 @@ import argparse
 import csv
 import os
 import progressbar
+import shapefile
 from owslib.wms import WebMapService
 
 def create_dir(path):
@@ -34,7 +35,26 @@ def get_number_of_images(filename):
             number_of_images += 1
 
     return number_of_images
-    
+
+def get_locations_from_csv(filename, output_directory, image_format):
+    with open(, "r") as csv_file:
+        csv_reader = csv.DictReader(csv_file, delimiter=";")
+        for row in csv_reader:
+            longitude = float(row["x"])
+            latitude = float(row["y"])
+            label = "positive" if row["label"].lower() == "true" else "negative"
+            
+            output_path = os.path.join(os.path.join(output_directory, label))
+            output_path = os.path.join(output_path, "{}.{}".format(row["object_id"], image_format.split("/")[-1]))
+            yield output_path, longitude, latitude
+
+def get_locations_from_shapefile(filename, output_directory, image_format):
+    pass
+
+
+def get_locations(filename, output_directory, image_format):
+    yield from get_locations_from_csv(filename, output_directory, image_format) if filename.endswith(".csv") else get_location_from_shapefile(filename)
+
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--input", required=True, help="The input csv file with the coordinates and annotations")
 parser.add_argument("-o", "--output", required=True, help="The output directory")
@@ -52,19 +72,9 @@ create_dir(os.path.join(args["output"], "negative"))
 number_of_images = get_number_of_images(args["input"])
 widgets = ["Classifying images: ", progressbar.Percentage(), " ", progressbar.Bar(), " ", progressbar.ETA()]
 pbar = progressbar.ProgressBar(maxval=number_of_images, widgets=widgets).start()
-
-with open(args["input"], "r") as csv_file:
-    csv_reader = csv.DictReader(csv_file, delimiter=";")
-    for i, row in enumerate(csv_reader):
-        longitude = float(row["x"])
-        latitude = float(row["y"])
-        label = "positive" if row["label"].lower() == "true" else "negative"
-        
-        output_path = os.path.join(os.path.join(args["output"], label))
-        output_path = os.path.join(output_path, "{}.{}".format(row["object_id"], args["image_format"].split("/")[-1]))
-
-        tile_image = download_tile(args["wms_service"], args["layer"], longitude, latitude, args["width"], args["dop"], args["image_format"])
-        write_image(output_path, tile_image)
-        pbar.update(i)
+for i, (output_path, longitude, latitude) in enumerate(get_locations(args["input"], args["output"], args["image_format"])):
+    tile_image = download_tile(args["wms_service"], args["layer"], longitude, latitude, args["width"], args["dop"], args["image_format"])
+    write_image(output_path, tile_image)
+    pbar.update(i)
 
 pbar.finish()
