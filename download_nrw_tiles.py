@@ -58,10 +58,10 @@ with open(args["input"], "r") as csv_file:
     for i, row in enumerate(csv_reader):
         longitude = float(row["x"])
         latitude = float(row["y"])
-        label = "positive" if bool(row["label"]) else "negative"
+        label = "positive" if row["label"].lower() == "true" else "negative"
         
         output_path = os.path.join(os.path.join(args["output"], label))
-        output_path = os.path.join(output_path, "{}.{}".format(row["object_id"], args["image_format"].split("/")[-1])
+        output_path = os.path.join(output_path, "{}.{}".format(row["object_id"], args["image_format"].split("/")[-1]))
 
         tile_image = download_tile(args["wms_service"], args["layer"], longitude, latitude, args["width"], args["dop"], args["image_format"])
         write_image(output_path, tile_image)
