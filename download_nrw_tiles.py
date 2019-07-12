@@ -47,25 +47,22 @@ def get_number_of_images(filename):
 def get_locations_from_csv(filename, output_directory, image_extension):
     with open(filename, "r") as csv_file:
         csv_reader = csv.DictReader(csv_file, delimiter=";")
-        for row in csv_reader:
+        for i, row in enumerate(csv_reader):
+            object_id = row["object_id"]
             longitude = float(row["x"])
             latitude = float(row["y"])
             label = "positive" if row["label"].lower() == "true" else "negative"
             
-            output_path = os.path.join(os.path.join(output_directory, label))
-            output_path = os.path.join(output_path, "{}.{}".format(row["object_id"], image_extension))
-            yield output_path, longitude, latitude
+            yield object_id, longitude, latitude, label
 
 def get_locations_from_shapefile(filename, output_directory, image_extension):
     with shapefile.Reader(filename) as shp:
-        for record in shp.shapeRecords():
+        for i, record in enumerate(shp.shapeRecords()):
             object_id = record.record["LANUV_ID"]
             point = record.shape.points
             label = "positive"
 
-            output_path = os.path.join(os.path.join(output_directory, label))
-            output_path = os.path.join(output_path, "{}.{}".format(object_id, image_extension))
-            yield output_path, point[0][0], point[0][1] 
+            yield object_id, point[0][0], point[0][1], label 
 
 
 def get_locations(filename, output_directory, image_format):
@@ -74,6 +71,7 @@ def get_locations(filename, output_directory, image_format):
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--input", required=True, help="The input csv file with the coordinates and annotations")
 parser.add_argument("-o", "--output", required=True, help="The output directory")
+parser.add_argument("-m", "--metadata-file", default="image_metadata.csv", help="The filename that stores the metadata for each file")
 parser.add_argument("-s", "--wms_service", default="https://www.wms.nrw.de/geobasis/wms_nw_dop", help="The wms service to download pictures from")
 parser.add_argument("-l", "--layer", default="nw_dop_rgb", help="The layer to download from")
 parser.add_argument("-w", "--width", default=200, type=int, help="Tile width")
@@ -86,13 +84,23 @@ create_dir(os.path.join(args["output"], "positive"))
 create_dir(os.path.join(args["output"], "negative"))
 
 number_of_images = get_number_of_images(args["input"])
-widgets = ["Classifying images: ", progressbar.Percentage(), " ", progressbar.Bar(), " ", progressbar.ETA()]
+widgets = ["Downloading images: ", progressbar.Percentage(), " ", progressbar.Bar(), " ", progressbar.ETA()]
 pbar = progressbar.ProgressBar(maxval=number_of_images, widgets=widgets).start()
 
 image_extension = args["image_format"].split("/")[-1]
-for i, (output_path, longitude, latitude) in enumerate(get_locations(args["input"], args["output"], image_extension)):
-    tile_image = download_tile(args["wms_service"], args["layer"], longitude, latitude, args["width"], args["dop"], args["image_format"])
-    write_image(output_path, tile_image)
-    pbar.update(i)
+output_directory = args["output"]
+metadata_filename = os.path.join(output_directory, args["metadata_file"])
+with open(metadata_filename, "w") as metadata_file:
+    csv_writer = csv.DictWriter(metadata_file, delimiter=";", fieldnames=["index", "object_id", "image_filename"])
+    csv_writer.writeheader()
+    for i, (object_id, longitude, latitude, label) in enumerate(get_locations(args["input"], args["output"], image_extension)):
+        tile_image = download_tile(args["wms_service"], args["layer"], longitude, latitude, args["width"], args["dop"], args["image_format"])
+
+        output_path = os.path.join(os.path.join(output_directory, label))
+        output_path = os.path.join(output_path, "{}.{}".format(i, image_extension))
+    
+        write_image(output_path, tile_image)
+        csv_writer.writerow({"index": i, "object_id": object_id, "image_filename": output_path})
+        pbar.update(i)
 
 pbar.finish()
