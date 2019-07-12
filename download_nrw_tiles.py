@@ -91,7 +91,7 @@ image_extension = args["image_format"].split("/")[-1]
 output_directory = args["output"]
 metadata_filename = os.path.join(output_directory, args["metadata_file"])
 with open(metadata_filename, "w") as metadata_file:
-    csv_writer = csv.DictWriter(metadata_file, delimiter=";", fieldnames=["index", "object_id", "image_filename"])
+    csv_writer = csv.DictWriter(metadata_file, delimiter=";", fieldnames=["index", "object_id", "longitude", "latitude", "image_filename"])
     csv_writer.writeheader()
     for i, (object_id, longitude, latitude, label) in enumerate(get_locations(args["input"], args["output"], image_extension)):
         tile_image = download_tile(args["wms_service"], args["layer"], longitude, latitude, args["width"], args["dop"], args["image_format"])
@@ -100,7 +100,7 @@ with open(metadata_filename, "w") as metadata_file:
         output_path = os.path.join(output_path, "{}.{}".format(i, image_extension))
     
         write_image(output_path, tile_image)
-        csv_writer.writerow({"index": i, "object_id": object_id, "image_filename": output_path})
+        csv_writer.writerow({"index": i, "object_id": object_id, "longitude": longitude, "latitude": latitude, "image_filename": output_path})
         pbar.update(i)
 
 pbar.finish()
