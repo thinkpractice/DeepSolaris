@@ -38,11 +38,12 @@ for i in range(0, len(images), args["batch_size"]):
     image_batch = np.stack([load_image(filename) for filename in image_filenames])
     predictions = model.predict(image_batch, batch_size=args["batch_size"])
     for filename, prediction, image in zip(image_filenames, predictions, image_batch):
+        original = load_img(filename)
         if prediction >= args["cut_off"]:
-            save_img(os.path.join(positives_dir, os.path.basename(filename)), image)
+            save_img(os.path.join(positives_dir, os.path.basename(filename)), original)
             continue
-        save_img(os.path.join(negatives_dir, os.path.basename(filename)), image)
+        save_img(os.path.join(negatives_dir, os.path.basename(filename)), original)
     pbar.update(i)
-print("[INFO] finished processing")        
+print("[INFO] finished processing")
 pbar.finish()
 
