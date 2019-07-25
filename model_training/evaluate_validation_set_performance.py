@@ -1,4 +1,5 @@
 from cbds.deeplearning import Project, ImageGenerator
+from keras.model import load_model
 import argparse
 
 def main():
@@ -41,7 +42,10 @@ def main():
 
         image_shape = dataset.data[0].shape
 
-        model = project.model(args["model_name"])
+        cnn_model = load_model(args["model_filename"])
+        _, model_name = os.path.split(args["model_filename"])
+        model = project.model(model_name)
+        model.create_model(cnn_model)
         model.plot()
         cnn_model.summary()
 
