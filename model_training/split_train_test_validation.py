@@ -17,9 +17,9 @@ def main():
         dataset = project.dataset(args["dataset"])
         train_val_dataset, test_dataset = dataset.split(test_size=args["test_size"], first_name="{}_train_val".format(args["dataset"]), second_name="{}_test".format(args["dataset"]))
         train_dataset, validation_dataset = dataset.split(test_size=args["validation_size"], first_name="{}_train".format(args["dataset"]), second_name="{}_val".format(args["dataset"]))
-        train_dataset.save()
-        test_dataset.save()
-        validation_dataset.save()
+        train_dataset.save_dataset()
+        test_dataset.save_dataset()
+        validation_dataset.save_dataset()
 
 
 if __name__ == "__main__":
