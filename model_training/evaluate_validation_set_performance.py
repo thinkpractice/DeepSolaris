@@ -1,6 +1,10 @@
 from cbds.deeplearning import Project, ImageGenerator
-from keras.model import load_model
+from cbds.deeplearning.metrics import ClassificationReportCallback, ConfusionMatrixCallback, PlotRocCallback
+from cbds.deeplearning.settings import RMSPropSettings
+from keras.models import load_model
 import argparse
+import os
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -12,7 +16,8 @@ def main():
     parser.add_argument("-e", "--epochs", default=10, help="The number of epochs to train the model")
     parser.add_argument("-b", "--batch_size", default=32, help="The batch_size to train with")
     parser.add_argument("-l", "--learning_rate", default=1e-4, help="The learning rate to train with")
-    parser.add_argument("-m", "--model-name", required=True, help="The model to evaluate")
+    parser.add_argument("-m", "--model-filename", required=True, help="The model to evaluate")
+    parser.add_argument("-n", "--model-name", required=True, help="The name of the model to evaluate")
     args = vars(parser.parse_args())
 
     with Project(project_path=args["project_path"]) as project:
@@ -40,11 +45,9 @@ def main():
                                 .with_rescale(1/255.)\
                                 .with_seed(84)
 
-        image_shape = dataset.data[0].shape
-
         cnn_model = load_model(args["model_filename"])
         _, model_name = os.path.split(args["model_filename"])
-        model = project.model(model_name)
+        model = project.model("{}_{}".format(model_name, str(args["sample_size"])))
         model.create_model(cnn_model)
         model.plot()
         cnn_model.summary()
@@ -58,11 +61,10 @@ def main():
                 .with_train_dataset(train_generator)\
                 .with_test_dataset(test_generator)\
                 .with_evaluation_dataset(test_dataset)\
-                .with_evaluation_dataset(validation_dataset) as run:
+                .with_evaluation_dataset(validation_generator) as run:
                 run.train()
                 run.evaluate()
 
 
 if __name__ == "__main__":
     main()
-
