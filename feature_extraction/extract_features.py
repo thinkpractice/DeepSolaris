@@ -80,5 +80,7 @@ model = load_model(args["model"])
 model.summary()
 
 last_layer = model.get_layer(index=-1)
-write_features(model, positive_images, positive_labels, last_layer.size, "positive_features", args, class_labels)
-write_features(model, negative_images, negative_labels, last_layer.size, "negative_features", args, class_labels)
+feature_vector_size = np.prod(last_layer.output_shape[1:])
+
+write_features(model, positive_images, positive_labels, feature_vector_size, "positive_features", args, class_labels)
+write_features(model, negative_images, negative_labels, feature_vector_size, "negative_features", args, class_labels)
