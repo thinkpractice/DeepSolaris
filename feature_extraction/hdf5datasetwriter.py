@@ -3,14 +3,14 @@ import os
 
 class HDF5DatasetWriter:
     def __init__(self, dims, outputPath, dataKey="images", bufSize=1000):
-        if os.path.exists(outputPath):
-            raise ValueError("The supplied `outputPath` already "
-                    "exists and cannot be overwritten. Manually delete "
-                    "the file before continuing.", outputPath)
+        #if os.path.exists(outputPath):
+        #    raise ValueError("The supplied `outputPath` already "
+        #            "exists and cannot be overwritten. Manually delete "
+        #            "the file before continuing.", outputPath)
         
-        self.db = h5py.File(outputPath, "w")
+        self.db = h5py.File(outputPath, "a")
         self.data = self.db.create_dataset(dataKey, dims, dtype="float")
-        self.labels = self.db.create_dataset("labels", (dims[0],), dtype="int")
+        self.labels = self.db.create_dataset("{}_labels".format(dataKey), (dims[0],), dtype="int")
 
         self.bufSize = bufSize
         self.buffer = {"data": [], "labels": []}
@@ -32,6 +32,8 @@ class HDF5DatasetWriter:
 
     def storeClassLabels(self, classLabels):
         dt = h5py.special_dtype(vlen=str)
+        if "label_names" in self.db.keys():
+            return
         labelSet = self.db.create_dataset("label_names", (len(classLabels),), dtype=dt)
         labelSet[:] = classLabels
 
