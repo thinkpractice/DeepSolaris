@@ -1,4 +1,5 @@
 from sklearn.linear_model import LogisticRegression
+from sklearn.svm import LinearSVC
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import classification_report
 import argparse
@@ -22,6 +23,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument("-d", "--db", required=True, help="path HDF5 database")
 ap.add_argument("-m", "--model", required=True, help="path to output model")
 ap.add_argument("-j", "--jobs", type=int, default=-1, help="# of jobs to run when tuning hyperparameters")
+ap.add_argument("-c", "--classifier", default="lr", help="The classifier to use: logistic regression (lr) or svm")
 args = vars(ap.parse_args())
 
 db = h5py.File(args["db"], "r")
@@ -41,6 +43,9 @@ test_features, test_labels = shuffle(test_features, test_labels)
 print("[INFO] tuning hyperparameters...")
 params = {"C": [0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0]}
 model = GridSearchCV(LogisticRegression(solver="lbfgs", multi_class="auto", class_weight="balanced"), params, cv=3, n_jobs=args["jobs"])
+if args["classifier"].lower() == "svm":
+    model = GridSearchCV(LinearSVC(class_weight="balanced"), params, cv=3, n_jobs=args["jobs"])
+
 model.fit(train_features, train_labels)
 print("[INFO] best hyperparameters: {}".format(model.best_params_))
 
