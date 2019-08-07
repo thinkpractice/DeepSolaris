@@ -3,6 +3,7 @@ from keras.preprocessing import image
 from keras.layers.core import Lambda
 from keras.models import Model, load_model
 from tensorflow.python.framework import ops
+from imutils.paths import list_images
 import keras.backend as K
 import tensorflow as tf
 import numpy as np
@@ -123,29 +124,32 @@ def grad_cam(input_model, image, category_index, layer_name, target_size, nb_cla
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-i", "--image", required=True, help="The image for which the gradcam should be calculated")
+    parser.add_argument("-d", "--dataset", required=True, help="The dataset for which the gradcam images should be calculated")
     parser.add_argument("-m", "--model", required=True, help="The model to visualize")
+    parser.add_argument("-o", "--output-directory", required=True, help="The output directory")
     parser.add_argument("-t", "--target-size", default=(187,187), nargs='+', type=int, help="The target size for the network input")
     args = vars(parser.parse_args())
 
-    print("Loading file: {}".format(args["image"]))
-    preprocessed_input = load_image(args["image"], target_size=args["target_size"])
     model = load_model(args["model"])
     model.summary()
-    predictions = model.predict(preprocessed_input)
-    predicted_class = np.argmax(predictions)
-    print("Predicted class: {}".format(predicted_class))
+    for image_filename in list_images(args["dataset"]):
+        print("Loading file: {}".format(image_filename))
+        preprocessed_input = load_image(image_filename, target_size=args["target_size"])
+        predictions = model.predict(preprocessed_input)
+        predicted_class = np.argmax(predictions)
+        print("Predicted class: {}".format(predicted_class))
 
-    cam, heatmap = grad_cam(model, preprocessed_input, predicted_class, "block5_conv3", args["target_size"])
-    output_filename, _ = os.path.splitext(args["image"])
-    cv2.imwrite("{}_gradcam.png".format(output_filename), cam)
+        cam, heatmap = grad_cam(model, preprocessed_input, predicted_class, "block5_conv3", args["target_size"])
+        output_filename, _ = os.path.splitext(image_filename)
+        output_filename = os.path.join(args["output_directory"], os.path.basename(output_filename))
+        cv2.imwrite("{}_gradcam.png".format(output_filename), cam)
 
-    register_gradient()
-    guided_model = modify_backprop(model, 'GuidedBackProp', args["model"])
-    saliency_fn = compile_saliency_function(guided_model)
-    saliency = saliency_fn([preprocessed_input, 0])
-    gradcam = saliency[0] * heatmap[..., np.newaxis]
-    cv2.imwrite("{}_guided_gradcam.png".format(output_filename), deprocess_image(gradcam))
+        register_gradient()
+        guided_model = modify_backprop(model, 'GuidedBackProp', args["model"])
+        saliency_fn = compile_saliency_function(guided_model)
+        saliency = saliency_fn([preprocessed_input, 0])
+        gradcam = saliency[0] * heatmap[..., np.newaxis]
+        cv2.imwrite("{}_guided_gradcam.png".format(output_filename), deprocess_image(gradcam))
 
 if __name__ == "__main__":
     main()
