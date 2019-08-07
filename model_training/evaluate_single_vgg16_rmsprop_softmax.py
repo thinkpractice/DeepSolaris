@@ -5,13 +5,13 @@ from cbds.deeplearning.settings import RMSPropSettings
 from cbds.deeplearning.models.vgg16 import vgg16
 from cbds.deeplearning.metrics import ClassificationReportCallback, ConfusionMatrixCallback, PlotRocCallback
 from scipy.stats import uniform
-from keras.layers import Dense, Dropout, Flatten
+from keras.layers import Dense, Dropout, Flatten, GlobalAveragePooling2D
 from keras.models import Model
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau
+from keras.applications.vgg16 import preprocess_input
+from keras.utils import to_categorical
 from keras import regularizers
-from keras.applications.vgg16 import preprocess_input 
 from itertools import product
-import numpy as np
 import os
 
 
@@ -22,9 +22,10 @@ def create_vgg16_model(input_shape, layer_index=15):
     for layer in base_model.layers[layer_index:]:
         layer.trainable = True
     x = Flatten()(base_model.output)
-    l2 = 0.01
-    predictions = Dense(1, activation="sigmoid", kernel_regularizer=regularizers.l2(l2))(x)
-    model_name = "vgg16_full_fc1_aug_frozen_rms_prop_l2_{}".format(l2)
+    #x = Dense(512, activation="relu")(x)
+    #x = GlobalAveragePooling2D()(base_model.output)
+    predictions = Dense(2, activation="softmax")(x)
+    model_name = "vgg16_full_fc1_aug_frozen_{}_softmax".format(layer_index)
     return model_name, Model(base_model.input, predictions)
 
 
@@ -35,11 +36,11 @@ def main():
         dataset = project.dataset("Heerlen-HR")
         dataset.data = preprocess_input(dataset.data[:,:,:,::-1])
 
-        train_dataset, test_dataset = dataset.split(test_size=0.25, random_state=42)
-        print("training set size: {}".format(len(train_dataset.labels)))
-        print("test set size: {}".format(len(test_dataset.labels)))
-        print("test positive label size: {}".format(len(test_dataset.labels[np.where(test_dataset.labels == 1)])))
-        print("test negative label size: {}".format(len(test_dataset.labels[np.where(test_dataset.labels == 0)])))
+        train_dataset, test_dataset = dataset.split(test_size=0.25)
+        class_weights = train_dataset.class_weights
+
+        train_dataset.labels = to_categorical(train_dataset.labels)
+        test_dataset.labels = to_categorical(test_dataset.labels)
 
         train_generator = ImageGenerator(train_dataset)\
                           .with_seed(42)\
@@ -69,7 +70,7 @@ def main():
                 .with_loss_function("binary_crossentropy")\
                 .with_optimizer(RMSPropSettings(lr=1e-5))\
                 .with_metric_callbacks([ClassificationReportCallback(), ConfusionMatrixCallback(), PlotRocCallback()])\
-                .with_class_weights(train_dataset.class_weights)\
+                .with_class_weights(class_weights)\
                 .with_train_dataset(train_generator)\
                 .with_test_dataset(test_generator)\
                 .with_evaluation_dataset(test_dataset) as run:
