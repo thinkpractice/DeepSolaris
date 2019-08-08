@@ -131,6 +131,7 @@ def main():
     args = vars(parser.parse_args())
 
     image_filename = args["image"]
+    model = load_model(args["model"])
     print("Loading file: {}".format(image_filename))
     preprocessed_input = load_image(image_filename, target_size=args["target_size"])
     predictions = model.predict(preprocessed_input)

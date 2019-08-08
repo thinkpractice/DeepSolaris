@@ -20,7 +20,8 @@ def main():
     widgets = ["Generating gradcam images: ", progressbar.Percentage(), " ", progressbar.Bar(), " ", progressbar.ETA()]
     pbar = progressbar.ProgressBar(maxval=len(images), widgets=widgets).start()
     for i, image_filename in enumerate(images):
-        cmd = "grad_cam.py -i {image_file} -m {model} -o {output_directory} -t {target_size}".format(image_file=image_filename, model=args["model"], output_directory=args["output_directory"], target_size=args["target_size"])
+        cmd = "grad_cam.py -i {image_file} -m {model} -o {output_directory} -t {target_size_first} {target_size_second}".format(image_file=image_filename, model=args["model"], output_directory=args["output_directory"], target_size_first=args["target_size"][0], target_size_second=args["target_size"][1])
+        print("Running {}".format(cmd))
         grad_cam = sh.Command("python")
         grad_cam(cmd.split(" "))
         pbar.update(i)
