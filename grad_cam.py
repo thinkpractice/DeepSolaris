@@ -132,13 +132,14 @@ def main():
 
     image_filename = args["image"]
     model = load_model(args["model"])
+    target_size = tuple(args["target_size"])
     print("Loading file: {}".format(image_filename))
-    preprocessed_input = load_image(image_filename, target_size=args["target_size"])
+    preprocessed_input = load_image(image_filename, target_size=target_size)
     predictions = model.predict(preprocessed_input)
     predicted_class = np.argmax(predictions)
     print("Predicted class: {}".format(predicted_class))
 
-    cam, heatmap = grad_cam(model, preprocessed_input, predicted_class, "block5_conv3", args["target_size"])
+    cam, heatmap = grad_cam(model, preprocessed_input, predicted_class, "block5_conv3", target_size)
     output_filename, _ = os.path.splitext(image_filename)
     output_filename = os.path.join(args["output_directory"], os.path.basename(output_filename))
     cv2.imwrite("{}_gradcam.png".format(output_filename), cam)
