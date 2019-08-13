@@ -23,17 +23,17 @@ parser.add_argument("-o", "--output", required=True, help="The output file conta
 parser.add_argument("-m", "--method", default="max", help="The method to use to label the annotations")
 args = vars(parser.parse_args())
 
+num_rows_written = 0
 with open(args["input"]) as csv_input:
     csv_reader = csv.DictReader(csv_input, delimiter=";")
     with open(args["output"], "w") as csv_output:
-        csv_writer = csv.DictWriter(csv_output, delimiter=";", fieldnames=["uuid", "positives", "negatives", "dkn", "label"])
+        csv_writer = csv.DictWriter(csv_output, delimiter=";", fieldnames=csv_reader.fieldnames + ["label"])
         csv_writer.writeheader()
         for row in csv_reader:
             label = label_for_row(row, args["method"])
-            csv_writer.writerow({
-            "uuid": row["uuid"], 
-            "positives": row["positives"], 
-            "negatives": row["negatives"],
-            "dkn": row["dkn"],
-            "label": label})
+            row["label"] = label
+            csv_writer.writerow(row)
+            num_rows_written += 1
+
+print("Labeled {} rows".format(num_rows_written))
 
