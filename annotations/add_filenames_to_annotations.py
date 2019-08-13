@@ -1,11 +1,12 @@
 import argparse
 import csv
+import os
 
 
 def get_filenames(paths_filename):
     with open(paths_filename) as paths_csv:
         csv_reader = csv.DictReader(paths_csv, delimiter=";")
-        return {"dataset_name": row["dataset_name"], "filename": row["filename"], "extension": row["extension"] for row in csv_reader}
+        return {row["dataset_name"]: row for row in csv_reader}
 
 
 parser = argparse.ArgumentParser()
@@ -21,7 +22,7 @@ num_rows_written = 0
 with open(args["input"]) as csv_input:
     csv_reader = csv.DictReader(csv_input, delimiter=";")
     with open(args["output"], "w") as csv_output:
-        csv_writer = csv.DictWriter(csv_output, fielnames=csv_reader.fieldnames() + ["filename"], delimiter=";")
+        csv_writer = csv.DictWriter(csv_output, fieldnames=csv_reader.fieldnames + ["filename"], delimiter=";")
         csv_writer.writeheader()
         for row in csv_reader:
             num_rows_read += 1
@@ -31,12 +32,12 @@ with open(args["input"]) as csv_input:
             if not dataset_row:
                 continue
 
-            dataset_path = filenames_dict.get("filename", None)
-            extension = filenames_dict.get("extension", None)
+            dataset_path = dataset_row.get("path", None)
+            extension = dataset_row.get("extension", None)
             if not dataset_path or not extension:
                 continue
 
-            filename = "{dataset_path}/{uuid}{extension}".format(dataset_path=dataset_path, uuid=row["uuid"], extension=extension) 
+            filename = os.path.join(dataset_path, "{uuid}{extension}".format(uuid=row["uuid"], extension=extension))
             row["filename"] = filename
             csv_writer.writerow(row)
             num_rows_written += 1

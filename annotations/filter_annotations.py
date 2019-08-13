@@ -19,14 +19,14 @@ num_rows_written = 0
 with open(args["input"]) as csv_input:
     csv_reader = csv.DictReader(csv_input, delimiter=";")
     with open(args["output"], "w") as csv_output:
-        csv_writer = csv.DictWriter(csv_output, delimiter=";", fieldnames=["uuid", "label"])
+        csv_writer = csv.DictWriter(csv_output, delimiter=";", fieldnames=csv_reader.fieldnames)
         csv_writer.writeheader()
 
         for row in csv_reader:
             num_rows_read += 1
             if not keep_row(row, args["method"]):
                 continue
-            csv_writer.writerow({"uuid": row["uuid"], "label": row["label"]})
+            csv_writer.writerow(row)
             num_rows_written += 1
 
 print("Filtered rows, read: {} rows, wrote: {} rows".format(num_rows_read, num_rows_written))
