@@ -22,7 +22,7 @@ num_rows_written = 0
 with open(args["input"]) as csv_input:
     csv_reader = csv.DictReader(csv_input, delimiter=";")
     with open(args["output"], "w") as csv_output:
-        csv_writer = csv.DictWriter(csv_output, fieldnames=csv_reader.fieldnames + ["filename"], delimiter=";")
+        csv_writer = csv.DictWriter(csv_output, fieldnames=csv_reader.fieldnames + ["filename", "parent_dataset"], delimiter=";")
         csv_writer.writeheader()
         for row in csv_reader:
             num_rows_read += 1
@@ -34,11 +34,13 @@ with open(args["input"]) as csv_input:
 
             dataset_path = dataset_row.get("path", None)
             extension = dataset_row.get("extension", None)
-            if not dataset_path or not extension:
+            parent_dataset_name = dataset_row.get("parent_dataset", None)
+            if not dataset_path or not extension or not parent_dataset_name:
                 continue
 
             filename = os.path.join(dataset_path, "{uuid}{extension}".format(uuid=row["uuid"], extension=extension))
             row["filename"] = filename
+            row["parent_dataset"] = parent_dataset_name
             csv_writer.writerow(row)
             num_rows_written += 1
 
