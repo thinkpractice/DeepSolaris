@@ -1,7 +1,7 @@
 from keras.models import load_model
 from sklearn.metrics import classification_report, confusion_matrix
 import argparse
-import numpy
+import numpy as np
 import os
 
 
