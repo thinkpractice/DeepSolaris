@@ -3,7 +3,7 @@ import csv
 
 
 def keep_row_dkn(row):
-    return row["label"] != -1
+    return int(row["label"]) != -1
 
 def keep_row(row, method):
     return keep_row_dkn(row)
