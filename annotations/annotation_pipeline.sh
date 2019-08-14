@@ -19,7 +19,8 @@ while getopts ":i:m:p:o:" opt; do
 done
 
 base_name="$(basename $annotation_file)"
-labeled_annotation_file="${base_name}_labeled.csv" 
+base_name="${base_name%.*}"
+labeled_annotation_file="${output_dir}/${base_name}_labeled.csv" 
 annotations_with_filename_file="${output_dir}/${base_name}_with_filename.csv" 
 filtered_annotations_file="${output_dir}/${base_name}_filtered.csv"
 
