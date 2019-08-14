@@ -30,6 +30,6 @@ for dataset_filename in get_numpy_datasets(args["input_directory"]):
     labels = get_numpy_labels(dataset_filename)    
     images = np.load(dataset_filename)
     images = preprocess_input(images[:,:,:,::-1])
-    predictions = model.predict(images)
+    predictions = round(model.predict(images)) 
     print(classification_report(labels, predictions))
     print(confusion_matrix(labels, predictions))
