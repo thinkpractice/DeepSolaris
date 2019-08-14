@@ -14,7 +14,7 @@ def get_numpy_datasets(path):
 
 
 def get_numpy_labels(filename):
-    dataset_name, _ = os.path.split_ext(filename)
+    dataset_name, _ = os.path.splitext(filename)
     label_filename = "{}_labels.npy".format(dataset_name)
     return np.load(label_filename)
 
