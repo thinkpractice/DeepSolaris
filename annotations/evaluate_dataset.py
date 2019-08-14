@@ -10,7 +10,7 @@ def get_paths(path):
 
 
 def get_numpy_datasets(path):
-    return [os.path.join(path, filename) for filename in get_paths(path) if path.endswith(".npy") and not path.endswith("labels.npy")]
+    return [os.path.join(path, filename) for filename in get_paths(path) if filename.endswith(".npy") and not filename.endswith("labels.npy")]
 
 
 def get_numpy_labels(filename):
@@ -26,7 +26,7 @@ args = vars(parser.parse_args())
 
 model = load_model(args["model"])
 for dataset_filename in get_numpy_datasets(args["input_directory"]):
-    labels = get_numpy_label(dataset_filename)    
+    labels = get_numpy_labels(dataset_filename)    
     images = np.load(dataset_filename)
     predictions = model.predict(images)
     print(classification_report(labels, predictions))
