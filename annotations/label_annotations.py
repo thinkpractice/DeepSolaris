@@ -3,9 +3,9 @@ import csv
 
 
 def max_label_for_row(row):
-    num_positives = row["positives"]
-    num_negatives = row["negatives"]
-    num_dkn = row["dkn"]
+    num_positives = int(row["positives"])
+    num_negatives = int(row["negatives"])
+    num_dkn = int(row["dkn"])
     if num_positives > num_negatives and num_positives >= num_dkn:
         return 1
     elif num_negatives > num_positives and num_negatives >= num_dkn:
