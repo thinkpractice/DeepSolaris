@@ -21,7 +21,7 @@ with open(args["input"]) as csv_input:
     for row in csv_reader:
         parent_dataset_name = row["parent_dataset"]      
         image_filenames[parent_dataset_name].append(row["filename"])
-        image_labels[parent_dataset_name].append(row["label"])
+        image_labels[parent_dataset_name].append(int(row["label"]))
 
 for dataset_name, image_paths in image_filenames.items():
     widgets = ["Writing images for {} dataset: ".format(dataset_name), progressbar.Percentage(), " ", progressbar.Bar(), " ", progressbar.ETA()]
