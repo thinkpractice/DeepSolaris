@@ -23,7 +23,7 @@ def get_numpy_labels(filename, one_hot=False):
 
 def evaluate(labels, predictions, one_hot=False):
     if one_hot:
-        predictions = np.argmax(predictions, axis=1)       
+        predictions = np.argmax(predictions, axis=1)
         labels = np.argmax(labels, axis=1)
     print(classification_report(labels, predictions))
     print(confusion_matrix(labels, predictions))
@@ -37,7 +37,8 @@ args = vars(parser.parse_args())
 model = load_model(args["model"])
 one_hot = model.get_layer(index=-1).output_shape[-1] > 1
 for dataset_filename in get_numpy_datasets(args["input_directory"]):
-    labels = get_numpy_labels(dataset_filename, one_hot)    
+    print("Evaluating dataset: {}".format(dataset_filename))
+    labels = get_numpy_labels(dataset_filename, one_hot)
     images = np.load(dataset_filename)
     images = preprocess_input(images[:,:,:,::-1])
     predictions = np.round(model.predict(images)) 
