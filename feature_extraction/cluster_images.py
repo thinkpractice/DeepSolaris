@@ -44,19 +44,20 @@ parser.add_argument("-o", "--output", required=True, help="The output directory 
 args = vars(parser.parse_args())
 
 model = load_model(args["model"])
+last_layer = model.get_layer(name=args["layer_name"])
 
 print("Loading the images")
 images = np.load(args["image_file"])
 images = preprocess_images(images)
 labels = np.load(args["labels"])
 
-print("Extracting features from {}".format(args["image_file"]))
-last_layer = model.get_layer(name=args["layer_name"])
 feature_vector_size = np.prod(last_layer.output_shape[1:])
+print("Feature vector size: {}".format(feature_vector_size))
 feature_model = Model(inputs=model.layers[0].input, outputs=last_layer.output)
 
-print("Feature vector size: {}".format(feature_vector_size))
-write_features(feature_model, args["batch_size"], images, labels, feature_vector_size, args["db"])
+if not os.path.exists(args["db"]:
+    print("Extracting features from {}".format(args["image_file"]))
+    write_features(feature_model, args["batch_size"], images, labels, feature_vector_size, args["db"])
 
 print("Clustering...")
 db = h5py.File(args["db"], "r")
