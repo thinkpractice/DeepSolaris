@@ -1,5 +1,5 @@
 from keras.models import load_model, Model
-from sklearn.cluster import DBSCAN
+from sklearn.cluster import KMeans, DBSCAN
 from hdf5datasetwriter import HDF5DatasetWriter
 import keras.applications.vgg16 as vgg16
 import argparse
@@ -60,8 +60,9 @@ write_features(feature_model, args["batch_size"], images, labels, feature_vector
 
 print("Clustering...")
 db = h5py.File(args["db"], "r")
-dbscan = DBSCAN(metric=args["distance_metric"])
-dbscan.fit(db["features"])
+#clustering_algorithm = DBSCAN(metric=args["distance_metric"])
+clustering_algorithm = KMeans()
+clustering_algorithm.fit(db["features"])
 print("Found {} clusters".format(len(np.unique(dbscan.labels_))))
 
 print("Writing image clusters to disk...")
