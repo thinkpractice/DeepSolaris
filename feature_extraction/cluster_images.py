@@ -62,7 +62,7 @@ if not os.path.exists(args["db"]):
 print("Clustering...")
 db = h5py.File(args["db"], "r")
 #clustering_algorithm = DBSCAN(metric=args["distance_metric"])
-clustering_algorithm = KMeans(metric=args["distance_metric"])
+clustering_algorithm = KMeans()
 clustering_algorithm.fit(db["features"])
 print("Found {} clusters".format(len(np.unique(clustering_algorithm.labels_))))
 
