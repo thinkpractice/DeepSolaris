@@ -55,7 +55,7 @@ feature_vector_size = np.prod(last_layer.output_shape[1:])
 print("Feature vector size: {}".format(feature_vector_size))
 feature_model = Model(inputs=model.layers[0].input, outputs=last_layer.output)
 
-if not os.path.exists(args["db"]:
+if not os.path.exists(args["db"]):
     print("Extracting features from {}".format(args["image_file"]))
     write_features(feature_model, args["batch_size"], images, labels, feature_vector_size, args["db"])
 
