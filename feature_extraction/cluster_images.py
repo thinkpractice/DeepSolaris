@@ -52,12 +52,14 @@ labels = np.load(args["labels"])
 print("Extracting features from {}".format(args["image_file"]))
 last_layer = model.get_layer(index=-1)
 feature_vector_size = np.prod(last_layer.output_shape[1:])
+print("Feature vector size: {}".format(feature_vector_size))
 write_features(model, args["batch_size"], images, labels, feature_vector_size, args["db"])
 
 print("Clustering...")
 db = h5py.File(args["db"], "r")
-dbscan = DBSCAN(metric=args["distance_metric"])
+dbscan = DBSCAN(metric=args["cosine"])
 dbscan.fit(db["features"])
+print("Found {} clusters".format(len(np.unique(dbscan.labels_))))
 
 print("Writing image clusters to disk...")
 for label in np.unique(dbscan.labels_):
