@@ -38,7 +38,7 @@ parser.add_argument("-l", "--labels", required=True, help="path to input labels"
 parser.add_argument("-m", "--model", required=True, help="path to the model used to extract features")
 parser.add_argument("-b", "--batch-size", type=int, default=32, help="batch size of images to be passed through network")
 parser.add_argument("-d", "--db", required=True, help="path HDF5 database")
-parser.add_argument("-s", "--distance-metric", default="cosine_similarity", help="The pairwise distance metric to use")
+parser.add_argument("-s", "--distance-metric", default="cosine", help="The pairwise distance metric to use")
 parser.add_argument("-o", "--output", required=True, help="The output directory to store the clusters")
 args = vars(parser.parse_args())
 
@@ -57,7 +57,7 @@ write_features(model, args["batch_size"], images, labels, feature_vector_size, a
 
 print("Clustering...")
 db = h5py.File(args["db"], "r")
-dbscan = DBSCAN(metric=args["cosine"])
+dbscan = DBSCAN(metric=args["distance_metric"])
 dbscan.fit(db["features"])
 print("Found {} clusters".format(len(np.unique(dbscan.labels_))))
 
