@@ -62,12 +62,12 @@ if not os.path.exists(args["db"]):
 print("Clustering...")
 db = h5py.File(args["db"], "r")
 #clustering_algorithm = DBSCAN(metric=args["distance_metric"])
-clustering_algorithm = KMeans()
+clustering_algorithm = KMeans(metric=args["distance_metric"])
 clustering_algorithm.fit(db["features"])
-print("Found {} clusters".format(len(np.unique(dbscan.labels_))))
+print("Found {} clusters".format(len(np.unique(clustering_algorithm.labels_))))
 
 print("Writing image clusters to disk...")
-for label in np.unique(dbscan.labels_):
-    cluster_images = images[np.where(dbscan.labels_ == label),:]
+for label in np.unique(clustering_algorithm.labels_):
+    cluster_images = images[np.where(clustering_algorithm.labels_ == label),:]
     np.save(os.path.join(args["output"], "{}.npy".format(label)), cluster_images)
 
