@@ -53,8 +53,10 @@ labels = np.load(args["labels"])
 print("Extracting features from {}".format(args["image_file"]))
 last_layer = model.get_layer(name=args["layer_name"])
 feature_vector_size = np.prod(last_layer.output_shape[1:])
+feature_model = Model(input=model.layers[0].input, output=last_layer.output)
+
 print("Feature vector size: {}".format(feature_vector_size))
-write_features(model, args["batch_size"], images, labels, feature_vector_size, args["db"])
+write_features(feature_model, args["batch_size"], images, labels, feature_vector_size, args["db"])
 
 print("Clustering...")
 db = h5py.File(args["db"], "r")
