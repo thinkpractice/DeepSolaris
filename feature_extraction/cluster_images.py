@@ -47,8 +47,8 @@ model = load_model(args["model"])
 last_layer = model.get_layer(name=args["layer_name"])
 
 print("Loading the images")
-images = np.load(args["image_file"])
-images = preprocess_images(images)
+orig_images = np.load(args["image_file"])
+images = preprocess_images(orig_images)
 labels = np.load(args["labels"])
 
 feature_vector_size = np.prod(last_layer.output_shape[1:])
@@ -68,6 +68,7 @@ print("Found {} clusters".format(len(np.unique(clustering_algorithm.labels_))))
 
 print("Writing image clusters to disk...")
 for label in np.unique(clustering_algorithm.labels_):
-    cluster_images = images[np.where(clustering_algorithm.labels_ == label),:]
+    cluster_images = orig_images[np.where(clustering_algorithm.labels_ == label),:]
+    print("Cluster images shape: {}".format(cluster_images.shape))
     np.save(os.path.join(args["output"], "{}.npy".format(label)), cluster_images)
 
