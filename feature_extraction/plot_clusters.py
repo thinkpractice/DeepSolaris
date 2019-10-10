@@ -14,7 +14,7 @@ for i in range(args["num_clusters"]):
     i = 0
     for r in range(3):
         for c in range(3):
-            if i >= image.shape[1]:
+            if i >= cluster_images.shape[1]:
                 break
             image = cluster_images[0, i,:]
             print(image.shape)
