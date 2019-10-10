@@ -45,7 +45,7 @@ for label in np.unique(clustering_algorithm.labels_):
     print("Cluster images shape: {}".format(cluster_images.shape))
     output_path = os.path.join(args["output"], "{}".format(label))
     if not os.path.exists(output_path):
-        os.path.makedirs(output_path)
+        os.makedirs(output_path)
 
     for index, image in enumerate(cluster_images):
         filename = os.path.join(output_path, "{}.png".format(index))
