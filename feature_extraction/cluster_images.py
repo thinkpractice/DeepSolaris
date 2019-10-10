@@ -1,5 +1,5 @@
 from keras.models import load_model, Model
-from sklearn.cluster import KMeans, DBSCAN
+from sklearn.cluster import KMeans, DBSCAN, OPTICS
 from sklearn.metrics.pairwise import pairwise_distances
 from hdf5datasetwriter import HDF5DatasetWriter
 import matplotlib.pyplot as plt
@@ -34,7 +34,8 @@ plt.hist(D.flatten(), bins=100)
 plt.show()
 print("Min distance: {}, Max distance: {}, Avg distance: {}".format(D.min(), D.max(), D.mean()))
 
-clustering_algorithm = DBSCAN(metric=args["distance_metric"], eps=args["eps"])
+#clustering_algorithm = DBSCAN(metric=args["distance_metric"], eps=args["eps"])
+clustering_algorithm = OPTICS(metric=args["distance_metric"])
 #clustering_algorithm = KMeans()
 clustering_algorithm.fit(features)
 print("Found {} clusters".format(len(np.unique(clustering_algorithm.labels_))))
