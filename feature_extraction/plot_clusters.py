@@ -1,8 +1,8 @@
 import numpy as np
-import arparse
+import argparse
 import matplotlib.pyplot as plt
 
-parser = ArgumentParser()
+parser = argparse.ArgumentParser()
 parser.add_argument("-n", "-num-clusters", type=int, required=True, help="Number of clusters to plot")
 args = vars(parser.parse_args())
 
