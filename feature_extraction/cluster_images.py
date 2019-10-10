@@ -2,6 +2,7 @@ from keras.models import load_model, Model
 from sklearn.cluster import KMeans, DBSCAN
 from sklearn.metrics.pairwise import pairwise_distances
 from hdf5datasetwriter import HDF5DatasetWriter
+import matplotlib.pyplot as plt
 import keras.applications.vgg16 as vgg16
 import argparse
 import pickle
@@ -28,7 +29,7 @@ db = h5py.File(args["db"], "r")
 features = db["features"]
 D = pairwise_distances(features, metric=args["distance_metric"])
 D = np.where(D==0, D.mean(), D)
-print(np.histogram(D.flatten(), bins=100))
+plt.histogram(D.flatten(), bins=100)
 print("Min distance: {}, Max distance: {}, Avg distance: {}".format(D.min(), D.max(), D.mean()))
 
 clustering_algorithm = DBSCAN(metric=args["distance_metric"], eps=args["eps"])
