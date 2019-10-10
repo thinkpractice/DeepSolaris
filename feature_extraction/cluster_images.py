@@ -34,8 +34,8 @@ plt.hist(D.flatten(), bins=100)
 plt.show()
 print("Min distance: {}, Max distance: {}, Avg distance: {}".format(D.min(), D.max(), D.mean()))
 
-clustering_algorithm = DBSCAN(metric=args["distance_metric"], eps=args["eps"])
-#clustering_algorithm = KMeans()
+#clustering_algorithm = DBSCAN(metric=args["distance_metric"], eps=args["eps"])
+clustering_algorithm = KMeans(n_clusters=4)
 clustering_algorithm.fit(features)
 print("Found {} clusters".format(len(np.unique(clustering_algorithm.labels_))))
 
