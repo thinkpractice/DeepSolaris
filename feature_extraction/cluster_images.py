@@ -26,11 +26,11 @@ print("Clustering...")
 db = h5py.File(args["db"], "r")
 features = db["features"]
 D = pairwise_distances(features, metric=args["distance_metric"])
-print("Min distance: {}, Max distance: {}, Avg distance: {}".format(D.min(), D.max(), D.mean(), ))
+print("Min distance: {}, Max distance: {}, Avg distance: {}".format(D.min(), D.max(), D.mean()))
 
-
-#clustering_algorithm = DBSCAN(metric=args["distance_metric"])
-clustering_algorithm = KMeans()
+eps = D.mean() / 2
+clustering_algorithm = DBSCAN(metric=args["distance_metric"], eps=eps)
+#clustering_algorithm = KMeans()
 clustering_algorithm.fit(features)
 print("Found {} clusters".format(len(np.unique(clustering_algorithm.labels_))))
 
