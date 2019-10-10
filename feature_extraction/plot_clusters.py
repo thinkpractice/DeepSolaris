@@ -14,7 +14,7 @@ for i in range(args["num_clusters"]):
     i = 0
     for r in range(3):
         for c in range(3):
-            image = cluster_images[1, i,:]
+            image = cluster_images[0, i,:]
             print(image.shape)
             ax[r, c].imshow(image)
             i += 1
