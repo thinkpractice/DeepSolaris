@@ -15,6 +15,7 @@ parser.add_argument("-i", "--image-file", required=True, help="The numpy file co
 parser.add_argument("-l", "--labels", required=True, help="path to input labels")
 parser.add_argument("-d", "--db", required=True, help="path HDF5 database")
 parser.add_argument("-s", "--distance-metric", default="cosine", help="The pairwise distance metric to use")
+parser.add_argument("-e", "--eps", default=0.5, type=float, help="The eps value for dbscan")
 parser.add_argument("-o", "--output", required=True, help="The output directory to store the clusters")
 args = vars(parser.parse_args())
 
@@ -29,8 +30,7 @@ D = pairwise_distances(features, metric=args["distance_metric"])
 D = np.where(D==0, D.mean(), D)
 print("Min distance: {}, Max distance: {}, Avg distance: {}".format(D.min(), D.max(), D.mean()))
 
-eps = 0.4
-clustering_algorithm = DBSCAN(metric=args["distance_metric"], eps=eps)
+clustering_algorithm = DBSCAN(metric=args["distance_metric"], eps=args["eps"])
 #clustering_algorithm = KMeans()
 clustering_algorithm.fit(features)
 print("Found {} clusters".format(len(np.unique(clustering_algorithm.labels_))))
