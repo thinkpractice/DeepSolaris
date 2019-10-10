@@ -25,7 +25,7 @@ labels = np.load(args["labels"])
 print("Clustering...")
 db = h5py.File(args["db"], "r")
 features = db["features"]
-D = pairwise_distances(features, metric=args["distance-metric"])
+D = pairwise_distances(features, metric=args["distance_metric"])
 print("Min distance: {}, Max distance: {}, Avg distance: {}, Median distance: {}".format(D.min(), D.max(), D.mean(), D.median()))
 
 
