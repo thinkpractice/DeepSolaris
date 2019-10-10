@@ -3,7 +3,7 @@ import argparse
 import matplotlib.pyplot as plt
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-n", "-num-clusters", type=int, required=True, help="Number of clusters to plot")
+parser.add_argument("-n", "--num-clusters", type=int, required=True, help="Number of clusters to plot")
 args = vars(parser.parse_args())
 
 for i in range(args["num_clusters"]):
