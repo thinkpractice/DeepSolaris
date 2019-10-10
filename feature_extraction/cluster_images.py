@@ -18,9 +18,6 @@ parser.add_argument("-s", "--distance-metric", default="cosine", help="The pairw
 parser.add_argument("-o", "--output", required=True, help="The output directory to store the clusters")
 args = vars(parser.parse_args())
 
-model = load_model(args["model"])
-last_layer = model.get_layer(name=args["layer_name"])
-
 print("Loading the images")
 orig_images = np.load(args["image_file"])
 images = preprocess_images(orig_images)
