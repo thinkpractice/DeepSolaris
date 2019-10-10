@@ -10,6 +10,7 @@ import h5py
 import os
 import numpy as np
 import progressbar
+import cv
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--image-file", required=True, help="The numpy file containing the images")
@@ -42,5 +43,11 @@ print("Writing image clusters to disk...")
 for label in np.unique(clustering_algorithm.labels_):
     cluster_images = orig_images[np.where(clustering_algorithm.labels_ == label),:]
     print("Cluster images shape: {}".format(cluster_images.shape))
-    np.save(os.path.join(args["output"], "{}.npy".format(label)), cluster_images)
+    output_path = os.path.join(args["output"], "{}".format(label))
+    if not os.path.exists(output_path):
+        os.path.makedirs(output_path)
+
+    for index, image in enumerate(cluster_images):
+        filename = os.path.join(output_path, "{}.png".format(index))
+        cv.imwrite(filename, image)
 
