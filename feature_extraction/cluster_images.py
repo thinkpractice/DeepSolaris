@@ -10,7 +10,7 @@ import h5py
 import os
 import numpy as np
 import progressbar
-import cv
+import cv2
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--image-file", required=True, help="The numpy file containing the images")
@@ -49,5 +49,5 @@ for label in np.unique(clustering_algorithm.labels_):
 
     for index, image in enumerate(cluster_images):
         filename = os.path.join(output_path, "{}.png".format(index))
-        cv.imwrite(filename, image)
+        cv2.imwrite(filename, image)
 
