@@ -28,6 +28,7 @@ db = h5py.File(args["db"], "r")
 features = db["features"]
 D = pairwise_distances(features, metric=args["distance_metric"])
 D = np.where(D==0, D.mean(), D)
+print(np.histogram(D.flatten(), bins=100))
 print("Min distance: {}, Max distance: {}, Avg distance: {}".format(D.min(), D.max(), D.mean()))
 
 clustering_algorithm = DBSCAN(metric=args["distance_metric"], eps=args["eps"])
