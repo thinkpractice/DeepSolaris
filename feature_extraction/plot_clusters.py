@@ -6,7 +6,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-n", "-num-clusters", type=int, required=True, help="Number of clusters to plot")
 args = vars(parser.parse_args())
 
-for i in range(args["num-clusters"]):
+for i in range(args["num_clusters"]):
     print("Cluster {}".format(i))
     cluster_images = np.load("{}.npy".format(i))
     print("Shape: {}".format(cluster_images.shape))
