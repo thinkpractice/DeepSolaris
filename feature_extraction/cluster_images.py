@@ -20,7 +20,6 @@ args = vars(parser.parse_args())
 
 print("Loading the images")
 orig_images = np.load(args["image_file"])
-images = preprocess_images(orig_images)
 labels = np.load(args["labels"])
 
 print("Clustering...")
