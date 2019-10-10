@@ -26,7 +26,7 @@ print("Clustering...")
 db = h5py.File(args["db"], "r")
 features = db["features"]
 D = pairwise_distances(features, metric=args["distance_metric"])
-print("Min distance: {}, Max distance: {}, Avg distance: {}, Median distance: {}".format(D.min(), D.max(), D.mean(), D.median()))
+print("Min distance: {}, Max distance: {}, Avg distance: {}".format(D.min(), D.max(), D.mean(), ))
 
 
 #clustering_algorithm = DBSCAN(metric=args["distance_metric"])
