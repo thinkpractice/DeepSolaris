@@ -1,8 +1,12 @@
 import numpy as np
+import arparse
 import matplotlib.pyplot as plt
 
+parser = ArgumentParser()
+parser.add_argument("-n", "-num-clusters", type=int, required=True, help="Number of clusters to plot")
+args = vars(parser.parse_args())
 
-for i in range(8):
+for i in range(args["num-clusters"]):
     print("Cluster {}".format(i))
     cluster_images = np.load("{}.npy".format(i))
     print("Shape: {}".format(cluster_images.shape))
