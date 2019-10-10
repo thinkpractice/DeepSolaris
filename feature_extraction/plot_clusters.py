@@ -17,6 +17,8 @@ for i in range(args["num_clusters"]):
             image = cluster_images[0, i,:]
             print(image.shape)
             ax[r, c].imshow(image)
+            if i > image.shape[1]:
+                break
             i += 1
     plt.show()
 
