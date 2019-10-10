@@ -29,7 +29,7 @@ D = pairwise_distances(features, metric=args["distance_metric"])
 D = np.where(D==0, D.mean(), D)
 print("Min distance: {}, Max distance: {}, Avg distance: {}".format(D.min(), D.max(), D.mean()))
 
-eps = D.min()
+eps = 0.4
 clustering_algorithm = DBSCAN(metric=args["distance_metric"], eps=eps)
 #clustering_algorithm = KMeans()
 clustering_algorithm.fit(features)
