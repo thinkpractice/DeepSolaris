@@ -41,7 +41,7 @@ print("Found {} clusters".format(len(np.unique(clustering_algorithm.labels_))))
 
 print("Writing image clusters to disk...")
 for label in np.unique(clustering_algorithm.labels_):
-    cluster_images = orig_images[np.where(clustering_algorithm.labels_ == label),:]
+    cluster_images = orig_images[np.where(clustering_algorithm.labels_ == label)[0],:]
     print("Cluster images shape: {}".format(cluster_images.shape))
     output_path = os.path.join(args["output"], "{}".format(label))
     if not os.path.exists(output_path):
