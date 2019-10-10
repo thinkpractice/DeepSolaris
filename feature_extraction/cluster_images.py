@@ -26,6 +26,7 @@ print("Clustering...")
 db = h5py.File(args["db"], "r")
 features = db["features"]
 D = pairwise_distances(features, metric=args["distance_metric"])
+np.where(D==0, D.mean(), D)
 print("Min distance: {}, Max distance: {}, Avg distance: {}".format(D.min(), D.max(), D.mean()))
 
 eps = D.mean() / 2
