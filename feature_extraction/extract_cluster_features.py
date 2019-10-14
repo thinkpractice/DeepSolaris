@@ -39,8 +39,6 @@ parser.add_argument("-m", "--model", required=True, help="path to the model used
 parser.add_argument("-n", "--layer-name", default="block5_pool", help="The name of the layer to use for feature extraction")
 parser.add_argument("-b", "--batch-size", type=int, default=32, help="batch size of images to be passed through network")
 parser.add_argument("-d", "--db", required=True, help="path HDF5 database")
-parser.add_argument("-s", "--distance-metric", default="cosine", help="The pairwise distance metric to use")
-parser.add_argument("-o", "--output", required=True, help="The output directory to store the clusters")
 args = vars(parser.parse_args())
 
 model = load_model(args["model"])
