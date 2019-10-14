@@ -40,7 +40,7 @@ print("Nearest neighbours calculation")
 widgets = ["KNN: ", progressbar.Percentage(), " ", progressbar.Bar(), " ", progressbar.ETA()]
 pbar = progressbar.ProgressBar(maxval=args["knn_range"], widgets=widgets).start()
 k_distances = dict()
-for k in range(args["knn_range"]):
+for k in range(1, args["knn_range"]):
     knn = NearestNeighbors(n_neighbors=k, metric=args["distance_metric"])
     knn.fit(features)
     dist, _ = knn.kneighbors(features)
