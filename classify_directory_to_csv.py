@@ -45,7 +45,7 @@ print("[INFO] processing images")
 widgets = ["Classifying images: ", progressbar.Percentage(), " ", progressbar.Bar(), " ", progressbar.ETA()]
 pbar = progressbar.ProgressBar(maxval=len(images), widgets=widgets).start()
 with open(args["output"], "w") as csv_file:
-    csv_writer = DictWriter(csv_file, fieldnames=["uuid", "prediction", "label"], delimiter=";")
+    csv_writer = csv.DictWriter(csv_file, fieldnames=["uuid", "prediction", "label"], delimiter=";")
     csv_writer.writeheader()
     for i in range(0, len(images), args["batch_size"]):
         image_filenames = images[i:i + args["batch_size"]]
