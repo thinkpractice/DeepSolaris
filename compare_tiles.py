@@ -2,6 +2,7 @@ import argparse
 import csv
 import cv2
 import os
+import progressbar
 from imutils.paths import list_images
 
 parser = argparse.ArgumentParser()
@@ -50,7 +51,9 @@ same_left_right = left_same & right_same
 if len(same_left_right) != len(left_same) or len(same_left_right) != len(right_same):
     print("Warning: some files are missing from the comparison")
 
-for uuid in same_left_right:
+widgets = ["Comparing images: ", progressbar.Percentage(), " ", progressbar.Bar(), " ", progressbar.ETA()]
+pbar = progressbar.ProgressBar(maxval=len(same_left_right), widgets=widgets).start()
+for i, uuid in enumerate(same_left_right):
     filename_left = uuids_filenames_left[uuid]
     filename_right = uuids_filenames_right[uuid]
     
@@ -68,5 +71,7 @@ for uuid in same_left_right:
     cv2.imshow("Right", image_right)
 
     cv2.waitKey(0)
+    pbar.update(i)
+pbar.finish()
 
 cv2.destroyAllWindows()
