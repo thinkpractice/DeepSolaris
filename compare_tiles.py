@@ -9,6 +9,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--input", required=True, help="The csv with the uuids to check")
 parser.add_argument("-l", "--left_directory", required=True, help="The left directory to check for files")
 parser.add_argument("-r", "--right_directory", required=True, help="The right directory to check for files")
+parser.add_argument("-o", "--output", required=True, help="The output file with the comparison results")
 parser.add_argument("-s", "--delimiter", default=";", help="The delimiter for the csv file")
 parser.add_argument("-c", "--uuid-column", default="uuid", help="The uuid column name to use from the csv file")
 parser.add_argument("-d", "--list-differences", type=bool, default=False)
@@ -53,31 +54,38 @@ if len(same_left_right) != len(left_same) or len(same_left_right) != len(right_s
 
 widgets = ["Comparing images: ", progressbar.Percentage(), " ", progressbar.Bar(), " ", progressbar.ETA()]
 pbar = progressbar.ProgressBar(maxval=len(same_left_right), widgets=widgets).start()
-for i, uuid in enumerate(same_left_right):
-    filename_left = uuids_filenames_left[uuid]
-    filename_right = uuids_filenames_right[uuid]
-    
-    image_left = cv2.imread(filename_left)
-    image_right = cv2.imread(filename_right)
+with open(args["output"], "w") as csv_file:
+    csv_writer = csv.DictWriter(csv_file, delimiter=args["delimiter"], fieldnames=["uuid", "same"])
+    csv_writer.writeheader()
 
-    resize_shape = image_left.shape[:2]
-    if image_left.shape[0] < image_right.shape[0] and image_left.shape[1] < image_right.shape[1]:
-        resize_shape = image_right.shape[:2]
+    for i, uuid in enumerate(same_left_right):
+        filename_left = uuids_filenames_left[uuid]
+        filename_right = uuids_filenames_right[uuid]
+        
+        image_left = cv2.imread(filename_left)
+        image_right = cv2.imread(filename_right)
 
-    image_left = cv2.resize(image_left, dsize=resize_shape)
-    image_right = cv2.resize(image_right, dsize=resize_shape)
+        resize_shape = image_left.shape[:2]
+        if image_left.shape[0] < image_right.shape[0] and image_left.shape[1] < image_right.shape[1]:
+            resize_shape = image_right.shape[:2]
 
-    cv2.imshow("Left", image_left)
-    cv2.imshow("Right", image_right)
+        image_left = cv2.resize(image_left, dsize=resize_shape)
+        image_right = cv2.resize(image_right, dsize=resize_shape)
 
-    key = cv2.waitKey(0)
-    if key == ord('s'):
-        print("same")
-    elif key == ord('d'):
-        print("different")
-    elif key == 27:
-        break
-    pbar.update(i)
-pbar.finish()
+        cv2.imshow("Left", image_left)
+        cv2.imshow("Right", image_right)
+
+        key = cv2.waitKey(0)
+        label = -1
+        if key == ord('s'):
+            label = 1
+        elif key == ord('d'):
+            label = 0
+        elif key == 27:
+            break
+        csv_writer.writerow({"uuid": uuid, "same": label})
+
+        pbar.update(i)
+    pbar.finish()
 
 cv2.destroyAllWindows()
