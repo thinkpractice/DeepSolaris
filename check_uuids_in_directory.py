@@ -26,8 +26,9 @@ if uuids_file.issubset(uuids_directory):
     print("All uuids present in directory")
 else:
     diff = uuids_file - uuids_directory
+    intersection = uuids_file & uuids_directory
     print("{} uuids in file, {} uuids in directory".format(len(uuids_file), len(uuids_directory)))
-    print("{} differences".format(len(diff)))
+    print("{} differences, {} common".format(len(diff), len(intersection)))
     if args["list_differences"]:
         print("Different uuids: {}".format(diff))
 
