@@ -70,7 +70,13 @@ for i, uuid in enumerate(same_left_right):
     cv2.imshow("Left", image_left)
     cv2.imshow("Right", image_right)
 
-    cv2.waitKey(0)
+    key = cv2.waitKey(0)
+    if key == ord('s'):
+        print("same")
+    elif key == ord('d'):
+        print("different")
+    elif key == 27:
+        break
     pbar.update(i)
 pbar.finish()
 
