@@ -1,0 +1,2 @@
+﻿CREATE INDEX "register_label_per_building_geovlak_index" ON "register_label_per_building" USING gist (geovlak);
+CREATE INDEX "annotations_per_tile_geo_area_index" ON "annotations_per_tile_geo" USING gist (area);
