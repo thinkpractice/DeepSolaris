@@ -9,6 +9,111 @@ inner join tiles as ti on ST_Intersects(bu.wkb_geometry, ti.area)
 where ST_Contains(ST_MakeEnvelope(172700, 306800, 205000,  338400, 28992), bu.wkb_geometry) 
 and (area_id = 19 or area_id = 21);
 
+-- Create weighing table for annotations
+drop table weighted_annotations_per_nb;
+create table weighted_annotations_per_nb
+as 
+select 
+	ag.*,  
+	nt.bu_code, nt.bu_naam, nt.wk_code, nt.gm_code, nt.gm_naam, nt.area_fraction_in_neighbourhood,
+	ag.label * nt.area_fraction_in_neighbourhood as weighted_label 
+from annotations_per_tile_geo as ag
+inner join neighbourhood_to_tile as nt on nt.tile_id = ag.tile_id;
+
+alter table weighted_annotations_per_nb
+add constraint pk_weighted_annotations_per_nb
+primary key (bu_code, tile_id);
+
+select * from weighted_annotations_per_nb
+order by tile_id;
+
+-- Number of annotations/annotated solar panels per neighbourhood in Zuid Limburg
+select 
+	bu.bu_code, bu.bu_naam, bu.wk_code, bu.gm_naam, 
+	count(id) as num_annotations, 
+	sum(
+		case when 
+			label < 0 
+		then 0 
+		else coalesce(weighted_label, 0) 
+		end
+	) as num_solar_panels_annotations, 
+	wkb_geometry 
+from buurt_2017 as bu
+left join weighted_annotations_per_nb as wa on bu.bu_code = wa.bu_code
+where ST_Contains(ST_MakeEnvelope(172700, 306800, 205000,  338400, 28992), wkb_geometry)
+group by bu.bu_code, bu.bu_naam, bu.wk_code, bu.gm_naam, wkb_geometry;
+
+-- Create weighing table for model predictions
+drop table model_predictions_geo;
+create table model_predictions_geo
+as
+select mp.*, ti.tile_id, ti.area_id, ti.area as tile_geom
+from model_predictions as mp
+inner join tiles as ti on ti.uuid = mp.uuid;
+
+alter table model_predictions_geo
+add constraint pk_model_predictions_geo 
+primary key  (tile_id);
+
+create index model_predictions_geo_idx
+on model_predictions_geo
+using gist(tile_geom);
+
+select distinct(area_id) 
+from model_predictions_geo;
+
+drop table weighted_predictions_per_nb;
+create table weighted_predictions_per_nb
+as 
+select 
+	mp.*,  
+	nt.bu_code, nt.bu_naam, nt.wk_code, nt.gm_code, nt.gm_naam, nt.area_fraction_in_neighbourhood,
+	mp.label * nt.area_fraction_in_neighbourhood as weighted_label 
+from model_predictions_geo as mp
+inner join neighbourhood_to_tile as nt on nt.tile_id = mp.tile_id;
+
+alter table weighted_predictions_per_nb
+add constraint pk_weighted_predictions_per_nb
+primary key (bu_code, tile_id);
+
+select * from weighted_predictions_per_nb
+order by tile_id;
+
+-- Model predictions per neighbourhood
+select 
+	mp.area_id,
+	sum(case when at.label = 1 and at.label = mp.label then 1 else 0 end) as positives,
+	sum(case when at.label = 0 and mp.label = 1 then 1 else 0 end) as false_positives,
+	sum(case when at.label = 0 and at.label = mp.label then 1 else 0 end) as negatives,
+	sum(case when at.label = 1 and mp.label = 0 then 1 else 0 end) as false_negatives,
+	sum(case when at.label = 1 then 1 else 0 end) as num_positives,
+	sum(case when at.label = 0 then 1 else 0 end) as num_negatives,
+	count(*) as total
+from annotations_per_tile_geo as at
+inner join model_predictions_geo as mp on at.uuid = UUID(mp.uuid)
+where at.label <> -1
+group by mp.area_id
+order by mp.area_id;
+
+select
+	bu.bu_code, bu.bu_naam, bu.wk_code, bu.gm_naam, 
+	count(*) as num_predictions, 
+	sum(
+		case when 
+			label < 0 
+		then 0 
+		else coalesce(weighted_label, 0) 
+		end
+	) as num_solar_panels_predictions, 
+	wkb_geometry 
+from buurt_2017 as bu
+left join weighted_predictions_per_nb as wp on bu.bu_code = wp.bu_code
+where ST_Contains(ST_MakeEnvelope(172700, 306800, 205000,  338400, 28992), wkb_geometry)
+group by bu.bu_code, bu.bu_naam, bu.wk_code, bu.gm_naam, wkb_geometry;
+
+
+
 -- Number of annotations BB Heerlen
 select count(*) from annotations_per_tile_geo
 where ST_Contains(ST_MakeEnvelope(190700, 327600, 200000, 314500, 28992), tile_geom);
@@ -63,63 +168,12 @@ select count(distinct(bag_address_id)) from buurt_2017 as bu
 inner join pv_2017_nl as pv on ST_Contains(wkb_geometry, location)
 where ST_Contains(ST_MakeEnvelope(172700, 306800, 205000,  338400, 28992), wkb_geometry);
 
--- Number of annotations/annotated solar panels per neighbourhood in Zuid Limburg
-select 
-	bu_code, bu_naam, wk_code, gm_naam, 
-	count(id) as num_annotations, 
-	sum(
-		case when 
-			label = -1 
-		then 0 
-		else coalesce(label, 0) 
-		end
-	) as num_solar_panels_annotations, 
-	wkb_geometry 
-from buurt_2017 as bu
-left join annotations_per_tile_geo as pv on ST_Contains(wkb_geometry, tile_geom)
+
+
+
+--neighbourhood_to_tile
 where ST_Contains(ST_MakeEnvelope(172700, 306800, 205000,  338400, 28992), wkb_geometry)
 group by bu_code, bu_naam, wk_code, gm_naam, wkb_geometry;
-
--- Model predictions per neighbourhood
-drop table model_predictions_geo;
-create table model_predictions_geo
-as
-select mp.*, ti.tile_id, ti.area_id, ti.area as tile_geom
-from model_predictions as mp
-inner join tiles as ti on ti.uuid = mp.uuid;
-
-alter table model_predictions_geo
-add constraint pk_model_predictions_geo 
-primary key  (tile_id);
-
-create index model_predictions_geo_idx
-on model_predictions_geo
-using gist(tile_geom);
-
-select distinct(area_id) 
-from model_predictions_geo;
-
-select 
-	mp.area_id,
-	sum(case when at.label = 1 and at.label = mp.label then 1 else 0 end) as positives,
-	sum(case when at.label = 0 and mp.label = 1 then 1 else 0 end) as false_positives,
-	sum(case when at.label = 0 and at.label = mp.label then 1 else 0 end) as negatives,
-	sum(case when at.label = 1 and mp.label = 0 then 1 else 0 end) as false_negatives,
-	sum(case when at.label = 1 then 1 else 0 end) as num_positives,
-	sum(case when at.label = 0 then 1 else 0 end) as num_negatives,
-	count(*) as total
-from annotations_per_tile_geo as at
-inner join model_predictions_geo as mp on at.uuid = UUID(mp.uuid)
-where at.label <> -1
-group by mp.area_id
-order by mp.area_id;
-
-drop table predictions_per_bu;
-create table predictions_per_bu
-as
-(
-    select * from predictions_per_tile;
-);
 
 -- Combined: number of solar panels from register, number of annotations/annotated solar panels, difference between register and annotations per buurt
 drop table num_solar_panels_bu_ann_vs_reg;
