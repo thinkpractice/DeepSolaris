@@ -1,4 +1,32 @@
-﻿-- BB ZL_HR
+-- Assign tiles to neighbourhood
+drop table neigbourhood_to_tile;
+create table neighbourhood_to_tile
+as
+select *, 
+	ST_Area(ST_Intersection(ti.area, bu.wkb_geometry)) / ST_Area(ti.area) as area_fraction_in_neighbourhood
+from buurt_2017 as bu
+inner join tiles as ti on ST_Intersects(bu.wkb_geometry, ti.area)
+where ST_Contains(ST_MakeEnvelope(172700, 306800, 205000,  338400, 28992), bu.wkb_geometry) 
+and (area_id = 19 or area_id = 21);
+
+-- Number of annotations BB Heerlen
+select count(*) from annotations_per_tile_geo
+where ST_Contains(ST_MakeEnvelope(190700, 327600, 200000, 314500, 28992), tile_geom);
+
+select count(*) from annotations_per_tile_geo
+where ST_Intersects(ST_MakeEnvelope(190700, 327600, 200000, 314500, 28992), tile_geom);
+
+-- Number of annotations ZL_HR
+select count(*) from annotations_per_tile_geo
+where ST_Contains(ST_MakeEnvelope(181300, 327600, 190600, 314500, 28992), tile_geom);
+
+select count(*) from annotations_per_tile_geo
+where ST_Intersects(ST_MakeEnvelope(181300, 327600, 190600, 314500, 28992), tile_geom);
+
+-- Number of model predictions
+select count(*) from model_predictions;
+
+-- BB ZL_HR
 select * from buurt_2017
 where ST_Contains(ST_MakeEnvelope(181300, 327600, 190600, 314500, 28992), wkb_geometry);
 -- BB Heerlen
@@ -35,8 +63,6 @@ select count(distinct(bag_address_id)) from buurt_2017 as bu
 inner join pv_2017_nl as pv on ST_Contains(wkb_geometry, location)
 where ST_Contains(ST_MakeEnvelope(172700, 306800, 205000,  338400, 28992), wkb_geometry);
 
-
-
 -- Number of annotations/annotated solar panels per neighbourhood in Zuid Limburg
 select 
 	bu_code, bu_naam, wk_code, gm_naam, 
@@ -55,21 +81,38 @@ where ST_Contains(ST_MakeEnvelope(172700, 306800, 205000,  338400, 28992), wkb_g
 group by bu_code, bu_naam, wk_code, gm_naam, wkb_geometry;
 
 -- Model predictions per neighbourhood
-drop table predictions_per_tile;
-create table predictions_per_tile
+drop table model_predictions_geo;
+create table model_predictions_geo
 as
-(
-    select mp.*, ti.tile_id, ti.tile_geom from model_predictions as mp
-    inner join tiles as ti on mp.uuid = ti.uuid
-    where ti.area_id = 19 or ti.area_id = 21;
-);
+select mp.*, ti.tile_id, ti.area_id, ti.area as tile_geom
+from model_predictions as mp
+inner join tiles as ti on ti.uuid = mp.uuid;
 
-alter table predictions_per_tile
-add primary key ();
+alter table model_predictions_geo
+add constraint pk_model_predictions_geo 
+primary key  (tile_id);
 
-create index predictions_per_tile_geo_idx
-on predictions_per_tile
+create index model_predictions_geo_idx
+on model_predictions_geo
 using gist(tile_geom);
+
+select distinct(area_id) 
+from model_predictions_geo;
+
+select 
+	mp.area_id,
+	sum(case when at.label = 1 and at.label = mp.label then 1 else 0 end) as positives,
+	sum(case when at.label = 0 and mp.label = 1 then 1 else 0 end) as false_positives,
+	sum(case when at.label = 0 and at.label = mp.label then 1 else 0 end) as negatives,
+	sum(case when at.label = 1 and mp.label = 0 then 1 else 0 end) as false_negatives,
+	sum(case when at.label = 1 then 1 else 0 end) as num_positives,
+	sum(case when at.label = 0 then 1 else 0 end) as num_negatives,
+	count(*) as total
+from annotations_per_tile_geo as at
+inner join model_predictions_geo as mp on at.uuid = UUID(mp.uuid)
+where at.label <> -1
+group by mp.area_id
+order by mp.area_id;
 
 drop table predictions_per_bu;
 create table predictions_per_bu
@@ -77,7 +120,6 @@ as
 (
     select * from predictions_per_tile;
 );
-
 
 -- Combined: number of solar panels from register, number of annotations/annotated solar panels, difference between register and annotations per buurt
 drop table num_solar_panels_bu_ann_vs_reg;
@@ -124,5 +166,5 @@ select count(*) from pv_2017_nl
 where ST_Contains(ST_MakeEnvelope(190700, 327600, 200000, 314500, 28992), location);
 
 
-
+ 
 
