@@ -9,6 +9,18 @@ inner join tiles as ti on ST_Intersects(bu.wkb_geometry, ti.area)
 where ST_Contains(ST_MakeEnvelope(172700, 306800, 205000,  338400, 28992), bu.wkb_geometry) 
 and (area_id = 19 or area_id = 21);
 
+-- Assign tiles to neighbourhood
+drop table neigbourhood_to_building;
+create table neigbourhood_to_building
+as
+select pa.*, 
+	bu.bu_code, bu.bu_naam, bu.wk_code, bu.gm_code, bu.gm_naam,
+	ST_Area(ST_Intersection(pa.geovlak, bu.wkb_geometry)) / ST_Area(pa.geovlak) as area_fraction_in_neighbourhood
+from buurt_2017 as bu
+inner join register_label_per_building as pa on ST_Intersects(bu.wkb_geometry, pa.geovlak)
+where 
+	ST_Contains(ST_MakeEnvelope(172700, 306800, 205000,  338400, 28992), bu.wkb_geometry);
+
 -- Create weighing table for annotations
 drop table weighted_annotations_per_nb;
 create table weighted_annotations_per_nb
@@ -112,7 +124,18 @@ left join weighted_predictions_per_nb as wp on bu.bu_code = wp.bu_code
 where ST_Contains(ST_MakeEnvelope(172700, 306800, 205000,  338400, 28992), wkb_geometry)
 group by bu.bu_code, bu.bu_naam, bu.wk_code, bu.gm_naam, wkb_geometry;
 
+-- Create weighing table for register labels per neighbourhood
+drop table weighted_register_labels_per_nb;
+create table weighted_register_labels_per_nb
+as 
+select 
+	*,
+	register_label * area_fraction_in_neighbourhood as weighted_label 
+from neigbourhood_to_building;
 
+select count(*)
+from bagactueel.pandactueel as pa
+where ST_Contains(ST_MakeEnvelope(172700, 306800, 205000,  338400, 28992), pa.geovlak);
 
 -- Number of annotations BB Heerlen
 select count(*) from annotations_per_tile_geo
