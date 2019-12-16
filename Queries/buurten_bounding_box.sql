@@ -35,11 +35,11 @@ create table neighbourhood_to_tile
 as
 select *, 
 	ST_Area(ST_Intersection(ti.area, bu.wkb_geometry)) / ST_Area(ti.area) as area_fraction_in_neighbourhood
-from buurt_2017 as bu
+from selected_neighbourhoods as bu
 inner join tiles as ti on ST_Intersects(bu.wkb_geometry, ti.area)
-where ST_Contains(ST_MakeEnvelope(172700, 306800, 205000,  338400, 28992), bu.wkb_geometry) 
-and (area_id = 19 or area_id = 23);
+where in_train_validation_set = true;
 
+select count(*) from neighbourhood_to_tile;
 -- Assign buildings to neighbourhood
 drop table register_label_per_building;
 create table register_label_per_building
