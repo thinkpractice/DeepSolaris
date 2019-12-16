@@ -29,6 +29,8 @@ where ai.area_id = 23 and ST_Intersects(wkb_geometry, ai.area);
 update selected_neighbourhoods
 set in_train_validation_set = in_train_set or in_validation_set;
 
+--Create a table with selected buildings?
+
 -- Assign tiles to neighbourhood
 drop table neighbourhood_to_tile;
 create table neighbourhood_to_tile
@@ -280,14 +282,21 @@ select count(*) from weighted_register_labels_aggr_nb;
 
 -- Create diff tables per neighbourhood
 -- We need differences between labels!! Not just in numbers.
+-- should num_predictions, num_annotations, num_register_labels be weighted?
 drop table weighted_diff_per_nb;
 create table weighted_diff_per_nb
 as
 select wpa.bu_code, wpa.bu_naam, wpa.wk_code, wpa.gm_naam, 
+		num_annotations,
+		num_annotations / ST_Area(wpa.wkb_geometry) as num_annotations_norm,
 		num_solar_panels_annotations,
 		num_solar_panels_annotations / ST_Area(wpa.wkb_geometry) as num_solar_panels_annotations_norm, 
+		num_predictions,
+		num_predictions / ST_Area(wpa.wkb_geometry) as num_predictions_norm,
 		num_solar_panels_predictions,
 		num_solar_panels_predictions / ST_Area(wpa.wkb_geometry) as num_solar_panels_predictions_norm, 
+		num_register_labels,
+		num_register_labels / ST_Area(wpa.wkb_geometry) as num_register_labels_norm,
 		num_solar_panels_register,		
 		num_solar_panels_register / ST_Area(wpa.wkb_geometry) as num_solar_panels_register_norm,
 		num_solar_panels_predictions - num_solar_panels_annotations as predictions_annotations_diff,
@@ -303,7 +312,8 @@ inner join weighted_register_labels_aggr_nb as wra on wra.bu_code = wpa.bu_code;
 
 select count(*) from weighted_diff_per_nb;		
 
-
+select * from weighted_diff_per_nb
+limit 100;
 -- Number of annotations BB Heerlen
 select count(*) from annotations_per_tile_geo
 where ST_Contains(ST_MakeEnvelope(190700, 327600, 200000, 314500, 28992), tile_geom);
