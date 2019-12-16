@@ -15,7 +15,8 @@ create table neigbourhood_to_building
 as
 select pa.*, 
 	bu.bu_code, bu.bu_naam, bu.wk_code, bu.gm_code, bu.gm_naam,
-	ST_Area(ST_Intersection(pa.geovlak, bu.wkb_geometry)) / ST_Area(pa.geovlak) as area_fraction_in_neighbourhood
+	ST_Area(ST_Intersection(pa.geovlak, bu.wkb_geometry)) / ST_Area(pa.geovlak) as area_fraction_in_neighbourhood,
+	bu.wkb_geometry
 from buurt_2017 as bu
 inner join register_label_per_building as pa on ST_Intersects(bu.wkb_geometry, pa.geovlak)
 where 
@@ -36,16 +37,18 @@ alter table weighted_annotations_per_nb
 add constraint pk_weighted_annotations_per_nb
 primary key (bu_code, tile_id);
 
-select * from weighted_annotations_per_nb
+select count(*) from weighted_annotations_per_nb
 order by tile_id;
 
 -- Number of annotations/annotated solar panels per neighbourhood in Zuid Limburg
+create table weighted_annotations_aggr_nb
+as
 select 
 	bu.bu_code, bu.bu_naam, bu.wk_code, bu.gm_naam, 
 	count(id) as num_annotations, 
 	sum(
 		case when 
-			label < 0 
+			weighted_label < 0 
 		then 0 
 		else coalesce(weighted_label, 0) 
 		end
@@ -56,7 +59,31 @@ left join weighted_annotations_per_nb as wa on bu.bu_code = wa.bu_code
 where ST_Contains(ST_MakeEnvelope(172700, 306800, 205000,  338400, 28992), wkb_geometry)
 group by bu.bu_code, bu.bu_naam, bu.wk_code, bu.gm_naam, wkb_geometry;
 
+select count(*) from weighted_annotations_per_nb;
+
 -- Create weighing table for model predictions
+create table model_predictions
+(
+	uuid UUID;
+	uuid_string varchar(36),
+	model_name varchar,
+	prediction double precision,
+	label int,
+);
+
+copy model_predictions (uuid_string, model_name, prediction, label)
+from '/tmp/deepsolaris_model_predictions.csv'
+csv delimiter ';' header;
+
+update model_predictions
+set uuid = UUID(string);
+
+alter table model_predictions
+drop column uuid_string;
+
+alter table model_predictions
+add constraint pk_model_predictions primary key (uuid, model_name);
+
 drop table model_predictions_geo;
 create table model_predictions_geo
 as
@@ -108,12 +135,14 @@ where at.label <> -1
 group by mp.area_id
 order by mp.area_id;
 
+create table weighted_predictions_aggr_nb
+as
 select
 	bu.bu_code, bu.bu_naam, bu.wk_code, bu.gm_naam, 
 	count(*) as num_predictions, 
 	sum(
 		case when 
-			label < 0 
+			weighted_label < 0 
 		then 0 
 		else coalesce(weighted_label, 0) 
 		end
@@ -124,6 +153,8 @@ left join weighted_predictions_per_nb as wp on bu.bu_code = wp.bu_code
 where ST_Contains(ST_MakeEnvelope(172700, 306800, 205000,  338400, 28992), wkb_geometry)
 group by bu.bu_code, bu.bu_naam, bu.wk_code, bu.gm_naam, wkb_geometry;
 
+select count(*) from weighted_predictions_aggr_nb;
+
 -- Create weighing table for register labels per neighbourhood
 drop table weighted_register_labels_per_nb;
 create table weighted_register_labels_per_nb
@@ -133,9 +164,70 @@ select
 	register_label * area_fraction_in_neighbourhood as weighted_label 
 from neigbourhood_to_building;
 
+select building_id, area_fraction_in_neighbourhood, weighted_label 
+from weighted_register_labels_per_nb
+order by building_id;
+
 select count(*)
 from bagactueel.pandactueel as pa
 where ST_Contains(ST_MakeEnvelope(172700, 306800, 205000,  338400, 28992), pa.geovlak);
+
+create table weighted_register_labels_aggr_nb
+as
+select 
+	bu.bu_code, bu.bu_naam, bu.wk_code, bu.gm_naam, 
+	count(*) as num_register_labels, 
+	sum(
+		case when 
+			weighted_label < 0 
+		then 0 
+		else coalesce(weighted_label, 0) 
+		end
+	) as num_solar_panels_register, 
+	wkb_geometry 
+from weighted_register_labels_per_nb as bu
+group by bu.bu_code, bu.bu_naam, bu.wk_code, bu.gm_naam, bu.wkb_geometry;
+
+select count(*) from weighted_register_labels_aggr_nb;
+
+-- Create diff tables per neighbourhood
+drop table weighted_diff_predictions_annotations_per_nb;
+create table weighted_diff_predictions_annotations_per_nb
+as
+select wpa.bu_code, wpa.bu_naam, wpa.wk_code, wpa.gm_naam, 
+		num_solar_panels_annotations,
+		num_solar_panels_predictions,
+		num_solar_panels_predictions - num_solar_panels_annotations as diff,
+		wpa.wkb_geometry		
+from weighted_predictions_aggr_nb as wpa
+inner join weighted_annotations_aggr_nb as waa
+on waa.bu_code = wpa.bu_code;
+
+select count(*) from weighted_diff_predictions_annotations_per_nb;		
+
+drop table weighted_diff_register_annotations_per_nb;
+create table weighted_diff_register_annotations_per_nb
+as
+select wra.bu_code, wra.bu_naam, wra.wk_code, wra.gm_naam, 
+		num_solar_panels_annotations,
+		num_solar_panels_register,
+		num_solar_panels_register - num_solar_panels_annotations as diff,
+		wra.wkb_geometry		
+from weighted_register_labels_aggr_nb as wra
+inner join weighted_annotations_aggr_nb as waa
+on waa.bu_code = wra.bu_code;
+
+drop table weighted_diff_register_predictions_per_nb;
+create table weighted_diff_register_predictions_per_nb
+as
+select wpa.bu_code, wpa.bu_naam, wpa.wk_code, wpa.gm_naam, 
+		num_solar_panels_register,
+		num_solar_panels_predictions,
+		num_solar_panels_register - num_solar_panels_predictions as diff,
+		wpa.wkb_geometry		
+from weighted_predictions_aggr_nb as wpa
+inner join weighted_register_labels_aggr_nb as wra
+on wpa.bu_code = wra.bu_code;
 
 -- Number of annotations BB Heerlen
 select count(*) from annotations_per_tile_geo
