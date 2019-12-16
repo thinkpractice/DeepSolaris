@@ -62,24 +62,42 @@ group by bu.bu_code, bu.bu_naam, bu.wk_code, bu.gm_naam, wkb_geometry;
 select count(*) from weighted_annotations_per_nb;
 
 -- Create weighing table for model predictions
+drop table model_predictions;
 create table model_predictions
-(
-	uuid UUID;
-	uuid_string varchar(36),
-	model_name varchar,
+(	
+	uuid_string varchar(36),	
 	prediction double precision,
-	label int,
+	label int
 );
 
-copy model_predictions (uuid_string, model_name, prediction, label)
-from '/tmp/deepsolaris_model_predictions.csv'
+copy model_predictions (uuid_string, prediction, label)
+from '/media/tdjg/Data1/DeepSolaris/all_predictions.csv'
 csv delimiter ';' header;
 
+alter table model_predictions
+add column uuid UUID;
+
+alter table model_predictions
+add column model_name varchar;
+
+delete from model_predictions
+where uuid_string like 'feh%';
+
 update model_predictions
-set uuid = UUID(string);
+set uuid = UUID(uuid_string);
+
+update model_predictions
+set model_name = 'vgg16_best';
+
 
 alter table model_predictions
 drop column uuid_string;
+
+-- delete double uuids...
+delete from model_predictions
+select uuid from model_predictions
+group by uuid
+having count(uuid) > 1;
 
 alter table model_predictions
 add constraint pk_model_predictions primary key (uuid, model_name);
