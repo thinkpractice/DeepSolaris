@@ -22,8 +22,6 @@ def create_vgg16_model(input_shape, layer_index=15):
     for layer in base_model.layers[layer_index:]:
         layer.trainable = True
     x = Flatten()(base_model.output)
-    #x = Dense(512, activation="relu")(x)
-    #x = GlobalAveragePooling2D()(base_model.output)
     predictions = Dense(2, activation="softmax")(x)
     model_name = "vgg16_full_fc1_aug_frozen_{}_softmax".format(layer_index)
     return model_name, Model(base_model.input, predictions)

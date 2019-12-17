@@ -41,7 +41,7 @@ widgets = ["KNN: ", progressbar.Percentage(), " ", progressbar.Bar(), " ", progr
 pbar = progressbar.ProgressBar(maxval=args["knn_range"], widgets=widgets).start()
 k_distances = dict()
 for k in range(1, args["knn_range"]):
-    knn = NearestNeighbors(n_neighbors=k, metric=args["distance_metric"], n_jobs=-1)
+    knn = NearestNeighbors(n_neighbors=k, metric=args["distance_metric"])
     knn.fit(features)
     dist, _ = knn.kneighbors(features)
     k_distances[k] = dist.mean()
